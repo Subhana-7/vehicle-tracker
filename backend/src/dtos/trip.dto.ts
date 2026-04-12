@@ -2,6 +2,6 @@ export interface GPSData {
   latitude: number;
   longitude: number;
   timestamp: string;
-  ignition: string;
+  ignition: "ON" | "OFF"; 
   speed?: number;
 }
