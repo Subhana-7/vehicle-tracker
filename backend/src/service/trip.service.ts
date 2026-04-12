@@ -14,7 +14,9 @@ export class TripService {
     const trip = await this.tripRepo.findById(id);
     if (!trip) throw new Error("Trip not found");
 
-    const calc = this.analysisService.calculateTrip(trip.data);
+    const plainTrip = trip.toObject();
+
+    const calc = this.analysisService.calculateTrip(plainTrip.data);
     const analysis = this.analysisService.analyzeTrip(calc.data);
 
     return {
