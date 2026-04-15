@@ -1,12 +1,19 @@
-import { TripRepository } from "../repository/trip.repository";
 import { TripAnalysisService } from "./trip-analysis.service";
 import { GPSData } from "../dtos/trip.dto";
 import fs from "fs";
 import csv from "csv-parser";
+import { ITripRepository } from "../repository/interfaces/ITripRepository";
+import { injectable, inject } from "inversify";
+import { TYPES } from "../types";
+import { ITripService } from "./interfaces/ITripService";
 
-export class TripService {
-  private tripRepo = new TripRepository();
-  private analysisService = new TripAnalysisService();
+@injectable()
+export class TripService implements ITripService {
+  constructor(
+    @inject(TYPES.ITripRepository) private _tripRepo: ITripRepository,
+    @inject(TYPES.ITripAnalysisService)
+    private _analysisService: TripAnalysisService,
+  ) {}
 
   async createTripFromFile(userId: string, filePath: string) {
     const results: GPSData[] = [];
@@ -25,7 +32,7 @@ export class TripService {
         })
         .on("end", async () => {
           try {
-            const trip = await this.tripRepo.create({ userId, data: results });
+            const trip = await this._tripRepo.create({ userId, data: results });
             resolve(trip);
           } catch (err) {
             reject(err);
@@ -36,13 +43,13 @@ export class TripService {
   }
 
   async getTripAnalysis(id: string) {
-    const trip = await this.tripRepo.findById(id);
+    const trip = await this._tripRepo.findById(id);
     if (!trip) throw new Error("Trip not found");
 
     const plainTrip = trip.toObject();
 
-    const calc = this.analysisService.calculateTrip(plainTrip.data);
-    const analysis = this.analysisService.analyzeTrip(calc.data);
+    const calc = this._analysisService.calculateTrip(plainTrip.data);
+    const analysis = this._analysisService.analyzeTrip(calc.data);
 
     return {
       distance: calc.totalDistance,

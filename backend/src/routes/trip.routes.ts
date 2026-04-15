@@ -1,13 +1,20 @@
 import express from "express";
 import multer from "multer";
-import { TripController } from "../controller/trip.controller";
+import container from "../config/inversify.config";
+import { ITripController } from "../controller/interface/ITripController";
+import { TYPES } from "../types";
 
 const router = express.Router();
-const controller = new TripController();
-
 const upload = multer({ dest: "uploads/" });
 
-router.post("/upload", upload.single("data"), controller.uploadTrip);
-router.get("/trip/:id", controller.getTrip);
+const controller = container.get<ITripController>(TYPES.ITripController);
+
+router.post(
+  "/upload",
+  upload.single("data"),
+  controller.uploadTrip.bind(controller),
+);
+
+router.get("/trip/:id", controller.getTrip.bind(controller));
 
 export default router;

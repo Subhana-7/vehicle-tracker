@@ -1,6 +1,7 @@
 import { Model, Document } from "mongoose";
+import { IBaseRepository } from "./interfaces/IBaseRepository";
 
-export class BaseRepository<T extends Document> {
+export class BaseRepository<T extends Document> implements IBaseRepository<T> {
   constructor(private model: Model<T>) {}
 
   async create(data: Partial<T>): Promise<T> {

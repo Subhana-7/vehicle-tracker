@@ -16,5 +16,5 @@ export const GPSSchema = new Schema<GPSData>(
     ignition: { type: String, enum: ["ON", "OFF"], required: true },
     speed: { type: Number, default: 0 },
   },
-  { _id: false }
+  { _id: false },
 );
