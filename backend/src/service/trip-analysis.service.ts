@@ -1,7 +1,9 @@
 import geolib from "geolib";
 import { GPSData } from "../dtos/trip.dto";
+import { getDistance } from "geolib";
 
 export class TripAnalysisService {
+
   calculateTrip(data: GPSData[]) {
     let totalDistance = 0;
 
@@ -9,7 +11,7 @@ export class TripAnalysisService {
       const prev = data[i - 1];
       const curr = data[i];
 
-      const distance = geolib.getDistance(
+      const distance = getDistance(
         { latitude: prev.latitude, longitude: prev.longitude },
         { latitude: curr.latitude, longitude: curr.longitude }
       );

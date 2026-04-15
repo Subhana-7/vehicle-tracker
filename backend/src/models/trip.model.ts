@@ -10,7 +10,7 @@ export interface TripDocument extends Document {
 
 const tripSchema = new Schema<TripDocument>(
   {
-    userId: { type: String, required: true, index: true },
+    userId: { type: String, required: true},
     data: { type: [GPSSchema], required: true },
   },
   {
@@ -18,6 +18,5 @@ const tripSchema = new Schema<TripDocument>(
   }
 );
 
-tripSchema.index({ userId: 1 });
 
 export const TripModel = mongoose.model<TripDocument>("Trip", tripSchema);
