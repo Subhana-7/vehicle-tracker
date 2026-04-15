@@ -5,8 +5,11 @@ const tripService = new TripService();
 
 export class TripController {
   async uploadTrip(req: Request, res: Response) {
-    const data = req.body.data;
-    const trip = await tripService.createTrip("user1", data);
+    if (!req.file) {
+      return res.status(400).json({ message: "File is required" });
+    }
+
+    const trip = await tripService.createTripFromFile("user1", req.file.path);
 
     res.json(trip);
   }
