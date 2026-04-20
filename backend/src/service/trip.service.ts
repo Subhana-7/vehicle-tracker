@@ -51,11 +51,54 @@ export class TripService implements ITripService {
     const calc = this._analysisService.calculateTrip(plainTrip.data);
     const analysis = this._analysisService.analyzeTrip(calc.data);
 
+    const totalDuration =
+      (new Date(plainTrip.data[plainTrip.data.length - 1].timestamp).getTime() -
+        new Date(plainTrip.data[0].timestamp).getTime()) /
+      1000;
+
     return {
-      distance: calc.totalDistance,
-      idling: analysis.idlingTime,
-      stoppage: analysis.stoppageTime,
-      data: calc.data,
+      id: plainTrip._id.toString(),
+      name: plainTrip.name ?? "Trip",
+
+      summary: {
+        distance: calc.totalDistance,
+        duration: totalDuration,
+        idling: analysis.idlingTime,
+        stoppage: analysis.stoppageTime,
+        points: plainTrip.data.length,
+      },
+
+      route: calc.data, 
+
+      createdAt: plainTrip.createdAt,
+    };
+  }
+
+  async getAllTrips() {
+    const trips = await this._tripRepo.getAll();
+
+    if (!trips || trips.length === 0) {
+      return { trips: [] };
+    }
+
+    const formattedTrips = trips.map((trip: any) => {
+      const plain = trip.toObject();
+
+      const calc = this._analysisService.calculateTrip(plain.data);
+      const analysis = this._analysisService.analyzeTrip(calc.data);
+
+      return {
+        id: plain._id.toString(),
+        distance: calc.totalDistance,
+        idling: analysis.idlingTime,
+        stoppage: analysis.stoppageTime,
+        points: plain.data.length,
+        createdAt: plain.createdAt,
+      };
+    });
+
+    return {
+      trips: formattedTrips,
     };
   }
 }

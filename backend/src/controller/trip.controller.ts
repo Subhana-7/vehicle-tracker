@@ -28,4 +28,9 @@ export class TripController implements ITripController {
     );
     res.json(result);
   }
+
+  async getAllTrips(req:Request,res:Response){
+    const result = await this._tripService.getAllTrips();
+    res.json(result);
+  }
 }

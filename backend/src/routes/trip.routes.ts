@@ -17,4 +17,6 @@ router.post(
 
 router.get("/trip/:id", controller.getTrip.bind(controller));
 
+router.get("/trips",controller.getAllTrips.bind(controller))
+
 export default router;
