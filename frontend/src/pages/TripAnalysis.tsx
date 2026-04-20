@@ -2,9 +2,8 @@ import { useState } from "react";
 import {Legend } from "../components/Legend";
 import { TripTable } from "../components/Table";
 import { MapCard } from "../components/MapCard";
-import { StatsGrid } from "../components/CardComponent";
+import { StatsGrid,HeaderCard } from "../components/CardComponent";
 import { Tabs } from "../components/Tabs";
-import { HeaderCard } from "../components/CardComponent";
 import { Pagination } from "../components/Pagination";
 import { DashboardLayout } from "../components/DashboardLayout";
 

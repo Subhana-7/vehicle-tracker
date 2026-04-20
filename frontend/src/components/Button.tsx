@@ -5,7 +5,9 @@ type ButtonProps = {
   size?: ButtonSize;
   type?: "button" | "submit" | "reset";
   className?: string;
+  disabled?: boolean;
 };
+
 
 type ButtonVariant = "primary" | "secondary" | "open" | "danger" | "ghost";
 type ButtonSize = "sm" | "md";
