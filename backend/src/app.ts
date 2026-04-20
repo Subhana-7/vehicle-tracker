@@ -2,10 +2,17 @@ import express from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db";
 import tripRoutes from "./routes/trip.routes";
+import cors from "cors";
 
 dotenv.config();
 
 const app = express();
+
+app.use(cors({
+  origin: "http://localhost:5173",
+}));
+
+
 app.use(express.json());
 
 app.use("/api", tripRoutes);
