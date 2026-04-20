@@ -1,7 +1,18 @@
 import { Card } from "./CardComponent";
 import { NextIcon, PrevIcon } from "./Pagination";
 
-export const Tabs = ({ tabs, activeId, onSelect }:any) => (
+type Tab = {
+  id: string;
+  name: string;
+};
+
+type TabsProps = {
+  tabs: Tab[];
+  activeId: string | null;
+  onSelect: (id: string) => void;
+};
+
+export const Tabs = ({ tabs, activeId, onSelect }:TabsProps) => (
   <Card className="px-2 py-1">
     <div className="flex gap-1 overflow-x-auto">
       <button className="shrink-0 px-2 py-2 text-gray-400 hover:text-gray-600 transition cursor-pointer">
@@ -17,7 +28,7 @@ export const Tabs = ({ tabs, activeId, onSelect }:any) => (
               : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
         >
-          {tab.label}
+          {tab.name}
         </button>
       ))}
       <button className="shrink-0 px-2 py-2 text-gray-400 hover:text-gray-600 transition cursor-pointer">
