@@ -12,7 +12,7 @@ import { TripMap } from "../components/TripMap";
 import { Pagination } from "../components/Pagination";
 import { useParams } from "react-router-dom";
 
-type Tab = { id: string; label: string };
+type Tab = { id: string; name: string };
 
 export default function TripDetailsPage() {
   const [tabs, setTabs] = useState<Tab[]>([]);

@@ -6,7 +6,6 @@ import { LoginCard } from "../components/CardComponent";
 import { LoginInput } from "../components/InputComponent";
 import { LoginButton } from "../components/Button";
 import { AuthLayout } from "../components/AuthLayout";
-import { loginUser } from "../services/auth.service";
 import { useAuthStore } from "../store/auth.store";
 
 const LoginPage = () => {
