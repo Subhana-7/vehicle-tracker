@@ -17,7 +17,7 @@ export class AuthController {
   login = async (req: Request, res: Response) => {
     const tokens = await this.authService.login(
       req.body.email,
-      req.body.password
+      req.body.password,
     );
 
     res.cookie("accessToken", tokens.accessToken, {
@@ -55,8 +55,18 @@ export class AuthController {
   };
 
   logout = async (_req: Request, res: Response) => {
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
+
     res.json({ message: "Logged out" });
   };
 }
