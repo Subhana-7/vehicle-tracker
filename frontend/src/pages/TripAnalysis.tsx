@@ -1,5 +1,3 @@
-// pages/TripDetailsPage.tsx
-
 import { useEffect, useState } from "react";
 import { getAllTrips, getTripById } from "../services/trip.service";
 import type { TripDetails } from "../types/trip";
@@ -12,6 +10,7 @@ import { Tabs } from "../components/Tabs";
 import { DashboardLayout } from "../components/DashboardLayout";
 import { TripMap } from "../components/TripMap";
 import { Pagination } from "../components/Pagination";
+import { useParams } from "react-router-dom";
 
 type Tab = { id: string; label: string };
 
@@ -23,19 +22,32 @@ export default function TripDetailsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 10;
 
+  const { id } = useParams();
+
   // Load all trips
   useEffect(() => {
     const loadTrips = async () => {
       const data = await getAllTrips();
       setTabs(data);
 
-      if (data.length > 0) {
-        setActiveTripId(data[0].id);
-      }
+      // if (data.length > 0) {
+      //   setActiveTripId(data[0].id);
+      // }
+      useEffect(() => {
+  if (!id) return;
+
+  setActiveTripId(id);
+}, [id]);
     };
 
     loadTrips();
   }, []);
+
+  useEffect(() => {
+  if (!id) return;
+
+  setActiveTripId(id);
+}, [id]);
 
   console.log("tabs", tabs);
 

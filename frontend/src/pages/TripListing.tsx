@@ -4,6 +4,8 @@ import { Pagination } from "../components/Pagination";
 import { DashboardLayout } from "../components/DashboardLayout";
 import { Card } from "../components/CardComponent";
 import { Button } from "../components/Button";
+import { Modal } from "../components/Modal";
+import { useNavigate } from "react-router-dom";
 
 type Trip = {
   id:number,
@@ -52,6 +54,8 @@ export default function TripsPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [modalOpen, setModalOpen] = useState(false);
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchTrips = async () => {
@@ -74,10 +78,9 @@ export default function TripsPage() {
     console.log("Delete trip:", id);
   };
 
-  const handleOpen = (id:string) => {
-    // TODO: navigate to trip detail
-    console.log("Open trip:", id);
-  };
+  const handleOpen = (id: string) => {
+  navigate(`/trips/details/${id}`);
+};
 
   return (
     <DashboardLayout>
@@ -89,7 +92,7 @@ export default function TripsPage() {
       {/* Upload Action Card */}
       <Card className="p-4 sm:p-5 mb-6 w-full">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <Button text="Upload Trip" variant="primary" />
+          <Button text="Upload Trip" variant="primary" onClick={() => setModalOpen(true)} />
           <p className="text-sm text-gray-400">Upload the Excel sheet of your trip</p>
         </div>
       </Card>
@@ -133,6 +136,7 @@ export default function TripsPage() {
           />
         </Card>
       </div>
+       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </DashboardLayout>
   );
 }

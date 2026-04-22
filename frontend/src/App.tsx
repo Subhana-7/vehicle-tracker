@@ -35,7 +35,7 @@ const App = () => {
         />
 
         <Route
-          path="/trips/details"
+          path="/trips/details/:id"
           element={
             <ProtectedRoute>
               <TripDetailsPage />

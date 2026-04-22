@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 const API = import.meta.env.VITE_SERVER_URL;
 
@@ -11,10 +11,7 @@ export const signupUser = async (data: {
   return res.data;
 };
 
-export const verifyOtp = async (data: {
-  email: string;
-  otp: string;
-}) => {
+export const verifyOtp = async (data: { email: string; otp: string }) => {
   const res = await axios.post(`${API}/auth/verify-otp`, data);
   return res.data;
 };
@@ -24,12 +21,18 @@ export const resendOtp = async (email: string) => {
   return res.data;
 };
 
-export const loginUser = async (data: {
-  email: string;
-  password: string;
-}) => {
+export const loginUser = async (data: { email: string; password: string }) => {
   const res = await axios.post(`${API}/auth/login`, data, {
-    withCredentials: true, // IMPORTANT for cookies
+    withCredentials: true,
   });
+  return res.data;
+};
+
+export const logoutUser = async () => {
+  const res = await axios.post(
+    `${API}/auth/logout`,
+    {},
+    { withCredentials: true },
+  );
   return res.data;
 };
