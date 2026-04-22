@@ -7,6 +7,10 @@ export class UserRepository implements IUserRepository {
     return UserModel.findOne({ email });
   }
 
+  async findById(id:string):Promise<IUser | null> {
+    return UserModel.findById({id});
+  }
+
   async create(data: Partial<IUser>): Promise<IUser> {
   return UserModel.create(data);
 }

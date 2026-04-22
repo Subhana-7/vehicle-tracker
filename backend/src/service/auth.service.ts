@@ -39,6 +39,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string) {
+    console.log(email,password)
     const user = await this.userRepo.findByEmail(email);
     if (!user) throw new Error("User not found");
 
@@ -62,7 +63,7 @@ export class AuthService {
   async refresh(token: string) {
     const decoded: any = jwt.verify(token, process.env.JWT_REFRESH_SECRET!);
 
-    const user = await this.userRepo.findByEmail(decoded.id);
+    const user = await this.userRepo.findById(decoded.id);
     if (!user || user.refreshToken !== token)
       throw new Error("Invalid refresh token");
 
