@@ -18,7 +18,7 @@ type TripListProps = {
   onOpen:(id:string) => void;
 }
 
-import { getTrips } from "../services/trip.service";
+import { getAllTrips } from "../services/trip.service";
 
 
 const TOTAL_PAGES = 10;
@@ -55,14 +55,14 @@ export default function TripsPage() {
 
   useEffect(() => {
     const fetchTrips = async () => {
-      const data = await getTrips();
+      const data = await getAllTrips();
       setTrips(data);
     };
 
     fetchTrips();
   }, []);
 
-  console.log(trips)
+  console.log('---',trips)
 
   const handleToggle = (id:string) =>
     setSelectedIds((prev:any) =>

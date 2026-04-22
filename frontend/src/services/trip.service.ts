@@ -1,21 +1,27 @@
 import axios, { AxiosError } from "axios";
 import type { UploadError, UploadResponse } from "../types/upload";
+import type { TripDetails, TripsResponse } from "../types/trip";
 
 const API = import.meta.env.VITE_SERVER_URL;
 
 
-export const getTrips = async () => {
-  const res = await axios.get(`${API}/api/trip/69da65d00c4c7ec9e0a42351`); 
+export const getTripById = async (id:string):Promise<TripDetails> => {
+  const res = await axios.get<TripDetails>(`${API}/api/trip/${id}`); 
+  console.log(res.data)
 
-  const trip = res.data;
-  console.log(trip)
+  return res.data
+};
 
-  return [
-    {
-      id: 1, 
-      name: `Trip - ${trip.distance}m`, 
-    },
-  ];
+export const getAllTrips = async () => {
+  const res = await axios.get<TripsResponse>(`${API}/api/trips`);
+
+  const trips = res.data.trips; 
+  console.log('service1',trips)
+
+  return trips.map((trip: any) => ({
+    id: trip.id,
+    name: `Trip - ${trip.distance}m`,
+  }));
 };
 
 

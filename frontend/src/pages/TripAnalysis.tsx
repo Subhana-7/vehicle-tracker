@@ -1,85 +1,138 @@
-import { useState } from "react";
-import {Legend } from "../components/Legend";
+// pages/TripDetailsPage.tsx
+
+import { useEffect, useState } from "react";
+import { getAllTrips, getTripById } from "../services/trip.service";
+import type { TripDetails } from "../types/trip";
+
+import { Legend } from "../components/Legend";
 import { TripTable } from "../components/Table";
 import { MapCard } from "../components/MapCard";
-import { StatsGrid,HeaderCard } from "../components/CardComponent";
+import { StatsGrid, HeaderCard } from "../components/CardComponent";
 import { Tabs } from "../components/Tabs";
-import { Pagination } from "../components/Pagination";
 import { DashboardLayout } from "../components/DashboardLayout";
+import { TripMap } from "../components/TripMap";
+import { Pagination } from "../components/Pagination";
 
-// ─── Dummy Data ───────────────────────────────────────────────────────────────
-const TABS = [
-  { id: "colaba", label: "Colaba" },
-  { id: "marine", label: "Marine Drive" },
-  { id: "nariman", label: "Nariman Point" },
-  { id: "malabar", label: "Malabar Hill" },
-  { id: "bandra", label: "Bandra" },
-  { id: "andheri", label: "Andheri" },
-];
+type Tab = { id: string; label: string };
 
-const STATS = [
-  { id: "dist", value: "63 KM", label: "Total Distanced Travelled", color: "text-blue-500", icon: "🗺️" },
-  { id: "dur", value: "1Hr 36 Mins", label: "Total Travelled Duration", color: "text-cyan-500", icon: "🕐" },
-  { id: "ospeed_dur", value: "41 Mins", label: "Over Speeding Duration", color: "text-green-500", icon: "🚗" },
-  { id: "ospeed_dist", value: "20.3 KM", label: "Over Speeding Distance", color: "text-blue-500", icon: "📍" },
-  { id: "stopped", value: "41 Mins", label: "Stopped Duration", color: "text-cyan-500", icon: "🕐" },
-];
-
-const TRIP_LOGS = Array.from({ length: 3 }, (_, i) => ({
-  id: i + 1,
-  time: "11:30:24 PM to 11:30:24 PM",
-  point: `40.7128° N, 74.0060° W`,
-  ignition: i === 1 ? "OFF" : "ON",
-  speed: i === 1 ? "" : "28.5 KM/H",
-  travelDuration: "20 Mins",
-  stoppedFrom: "10 Mins",
-  distance: "10km",
-  overspeedingDuration: "20 Minutes",
-}));
-
-const TOTAL_PAGES = 5;
-
-const ArrowLeftIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="15 18 9 12 15 6" />
-  </svg>
-);
-
-
-// ─── Trip Details Page ────────────────────────────────────────────────────────
 export default function TripDetailsPage() {
-  const [activeTab, setActiveTab] = useState("colaba");
+  const [tabs, setTabs] = useState<Tab[]>([]);
+  const [activeTripId, setActiveTripId] = useState<string | null>(null);
+  const [trip, setTrip] = useState<TripDetails | null>(null);
+
   const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  // Load all trips
+  useEffect(() => {
+    const loadTrips = async () => {
+      const data = await getAllTrips();
+      setTabs(data);
+
+      if (data.length > 0) {
+        setActiveTripId(data[0].id);
+      }
+    };
+
+    loadTrips();
+  }, []);
+
+  console.log("tabs", tabs);
+
+  // Load selected trip
+  useEffect(() => {
+    if (!activeTripId) return;
+
+    const loadTrip = async () => {
+      const res = await getTripById(activeTripId);
+      setTrip(res);
+    };
+
+    loadTrip();
+  }, [activeTripId]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTripId]);
+
+  const stats = trip
+    ? [
+        {
+          id: "dist",
+          value: `${trip.summary.distance} m`,
+          label: "Total Distance",
+          icon: "🗺️",
+        },
+        {
+          id: "dur",
+          value: `${trip.summary.duration}s`,
+          label: "Duration",
+          icon: "🕐",
+        },
+        {
+          id: "idle",
+          value: `${trip.summary.idling}s`,
+          label: "Idling",
+          icon: "⏳",
+        },
+        {
+          id: "stop",
+          value: `${trip.summary.stoppage}s`,
+          label: "Stopped",
+          icon: "🛑",
+        },
+      ]
+    : [];
+
+  const logs =
+    trip?.route.map((p, i) => ({
+      id: i,
+      time: p.timestamp,
+      point: `${p.latitude}, ${p.longitude}`,
+      ignition: p.ignition.toUpperCase(),
+      speed: `${p.speed} km/h`,
+      travelDuration: "-",
+      stoppedFrom: p.speed === 0 ? "Yes" : "No",
+      distance: "-",
+      overspeedingDuration: "-",
+    })) ?? [];
+
+  const paginatedLogs = logs.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
+  const totalPages = Math.ceil(logs.length / PAGE_SIZE);
 
   return (
     <DashboardLayout>
-      {/* Back arrow */}
-      <div>
-        <button className="flex items-center gap-1 text-gray-500 hover:text-gray-800 transition text-sm cursor-pointer mb-3">
-          <ArrowLeftIcon />
-        </button>
+      <HeaderCard title={trip?.name ?? "Trips"} onNew={() => {}} />
 
-        {/* Header card */}
-        <HeaderCard title="Colaba" onNew={() => console.log("New clicked")} />
-      </div>
-
-      {/* Legend */}
       <Legend />
 
       {/* Map */}
-      <MapCard children={undefined} />
+      <MapCard>
+        <TripMap points={trip?.route ?? []} />
+      </MapCard>
 
       {/* Tabs */}
-      <Tabs tabs={TABS} activeId={activeTab} onSelect={setActiveTab} />
+      <Tabs
+        tabs={tabs}
+        activeId={activeTripId}
+        onSelect={(id: string) => setActiveTripId(id)}
+      />
 
       {/* Stats */}
-      <StatsGrid stats={STATS} />
+      <StatsGrid stats={stats} />
 
       {/* Table */}
-      <TripTable logs={TRIP_LOGS} />
+      <TripTable logs={paginatedLogs} />
 
-      {/* Pagination */}
-      <Pagination currentPage={currentPage} totalPages={TOTAL_PAGES} onPageChange={setCurrentPage} />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </DashboardLayout>
   );
 }
