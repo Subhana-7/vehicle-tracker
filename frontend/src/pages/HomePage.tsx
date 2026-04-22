@@ -1,12 +1,14 @@
 import { useState } from "react";
 
+import { useNavigate } from "react-router-dom";
 import { MapIllustration } from "../components/MapIllustration";
-import {DashboardLayout } from "../components/DashboardLayout";
+import { DashboardLayout } from "../components/DashboardLayout";
 import { Modal } from "../components/Modal";
 import { Card } from "../components/CardComponent";
 import { Button } from "../components/Button";
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -35,6 +37,13 @@ const DashboardPage = () => {
             <span className="underline text-gray-700 font-medium">Excel</span>{" "}
             sheet of your trip
           </p>
+
+          <Button
+            text="View Trip History"
+            onClick={() => navigate("/trips")}
+            variant="secondary"
+            className="px-8"
+          />
         </div>
       </Card>
 

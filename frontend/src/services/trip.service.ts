@@ -6,14 +6,18 @@ const API = import.meta.env.VITE_SERVER_URL;
 
 
 export const getTripById = async (id:string):Promise<TripDetails> => {
-  const res = await axios.get<TripDetails>(`${API}/api/trip/${id}`); 
+  const res = await axios.get<TripDetails>(`${API}/api/trip/${id}`,{
+    withCredentials:true
+  }); 
   console.log(res.data)
 
   return res.data
 };
 
 export const getAllTrips = async () => {
-  const res = await axios.get<TripsResponse>(`${API}/api/trips`);
+  const res = await axios.get<TripsResponse>(`${API}/api/trips`,{
+    withCredentials:true,
+  });
 
   const trips = res.data.trips; 
   console.log('service1',trips)
@@ -36,9 +40,7 @@ export const uploadTripFile = async (
       `${API}/api/upload`,
       formData,
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+       withCredentials:true,
       }
     );
 
