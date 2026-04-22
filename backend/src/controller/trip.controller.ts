@@ -22,7 +22,6 @@ export class TripController implements ITripController {
   }
 
   async getTrip(req: Request, res: Response) {
-    console.log("frotend hit")
     const result = await this._tripService.getTripAnalysis(
       req.params.id as string,
     );
