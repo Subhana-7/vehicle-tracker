@@ -6,26 +6,28 @@ import { LoginCard } from "../components/CardComponent";
 import { LoginInput } from "../components/InputComponent";
 import { LoginButton } from "../components/Button";
 import { AuthLayout } from "../components/AuthLayout";
-import { loginUser } from "../services/auth.service";
-import { useAuthStore } from "../store/auth.store";
+import { signupUser } from "../services/auth.service";
 
-const LoginPage = () => {
-   const navigate = useNavigate();
+const SignupPage = () => {
+ const navigate = useNavigate();
+
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const login = useAuthStore((s) => s.login);
+   const handleSubmit = async (e: any) => {
+    e.preventDefault();
 
-const handleSubmit = async (e: any) => {
-  e.preventDefault();
+    try {
+      await signupUser({ name, email, password });
 
-  try {
-    await login(email, password);
-    navigate("/dashboard");
-  } catch (err: any) {
-    alert(err.response?.data?.message || "Login failed");
-  }
-};
+      // pass email to OTP page
+      navigate("/verify-otp", { state: { email } });
+
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Signup failed");
+    }
+  };
 
   return (
     <AuthLayout>
@@ -41,13 +43,22 @@ const handleSubmit = async (e: any) => {
         {/* Form */}
         <form onSubmit={handleSubmit} noValidate>
           <LoginInput
+            id="name"
+            label="Name"
+            placeholder="Your name"
+            value={name}
+            onChange={(e: any) => setName(e.target.value)}
+          />
+
+          <LoginInput
             id="email"
             label="Email"
             type="email"
-            placeholder="Example@email.com"
+            placeholder="example@email.com"
             value={email}
             onChange={(e: any) => setEmail(e.target.value)}
           />
+
           <LoginInput
             id="password"
             label="Password"
@@ -56,17 +67,18 @@ const handleSubmit = async (e: any) => {
             value={password}
             onChange={(e: any) => setPassword(e.target.value)}
           />
-          <LoginButton text="Sign in" />
+
+          <LoginButton text="Sign up" />
         </form>
 
-        {/* Signup Link */}
+        {/* Login Link */}
         <p className="text-sm text-center text-gray-600 mt-5">
-          Don’t have an account?{" "}
+          Already have an account?{" "}
           <Link
-            to="/signup"
+            to="/"
             className="font-semibold text-slate-800 hover:underline"
           >
-            Sign up here
+            Login here
           </Link>
         </p>
       </LoginCard>
@@ -74,4 +86,4 @@ const handleSubmit = async (e: any) => {
   );
 };
 
-export default LoginPage;
+export default SignupPage;

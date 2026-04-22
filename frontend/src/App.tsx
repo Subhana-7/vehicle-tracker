@@ -1,25 +1,47 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import ProtectedRoute from "./components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/HomePage";
 import TripsPage from "./pages/TripListing";
 import TripDetailsPage from "./pages/TripAnalysis";
+import SignupPage from "./pages/SignupPage";
+import VerifyOtpPage from "./pages/Verify-Otp.page";
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Auth */}
         <Route path="/" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/verify-otp" element={<VerifyOtpPage />} />
 
-        {/* Dashboard */}
-        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Trips listing */}
-        <Route path="/trips" element={<TripsPage />} />
+        <Route
+          path="/trips"
+          element={
+            <ProtectedRoute>
+              <TripsPage />
+            </ProtectedRoute>
+          }
+        />
 
-        {/* Trip details (static for now, dynamic later) */}
-        <Route path="/trips/details" element={<TripDetailsPage />} />
+        <Route
+          path="/trips/details"
+          element={
+            <ProtectedRoute>
+              <TripDetailsPage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
