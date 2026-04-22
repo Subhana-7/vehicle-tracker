@@ -42,9 +42,13 @@ export class TripService implements ITripService {
     });
   }
 
-  async getTripAnalysis(id: string) {
+  async getTripAnalysis(id: string,userId:string) {
     const trip = await this._tripRepo.findById(id);
     if (!trip) throw new Error("Trip not found");
+
+     if (trip.userId !== userId) {
+    throw new Error("Unauthorized access");
+  }
 
     const plainTrip = trip.toObject();
 
@@ -74,14 +78,15 @@ export class TripService implements ITripService {
     };
   }
 
-  async getAllTrips() {
-    const trips = await this._tripRepo.getAll();
+  async getAllTrips(userId:string) {
+    const trips = await this._tripRepo.findByUserId(userId);
 
     if (!trips || trips.length === 0) {
       return { trips: [] };
     }
 
     const formattedTrips = trips.map((trip: any) => {
+      
       const plain = trip.toObject();
 
       const calc = this._analysisService.calculateTrip(plain.data);

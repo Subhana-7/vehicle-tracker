@@ -9,4 +9,7 @@ export class TripRepository
   constructor() {
     super(TripModel);
   }
+  async findByUserId(userId: string): Promise<TripDocument[]> {
+    return TripModel.find({ userId });
+  }
 }

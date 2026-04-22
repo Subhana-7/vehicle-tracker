@@ -8,7 +8,7 @@ export class UserRepository implements IUserRepository {
   }
 
   async findById(id:string):Promise<IUser | null> {
-    return UserModel.findById({id});
+    return UserModel.findById(id);
   }
 
   async create(data: Partial<IUser>): Promise<IUser> {
