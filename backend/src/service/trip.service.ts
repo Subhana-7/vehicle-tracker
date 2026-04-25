@@ -1,109 +1,174 @@
-import { TripAnalysisService } from "./trip-analysis.service";
-import { GPSData } from "../dtos/trip.dto";
 import fs from "fs";
 import csv from "csv-parser";
-import { ITripRepository } from "../repository/interfaces/ITripRepository";
 import { injectable, inject } from "inversify";
 import { TYPES } from "../types";
 import { ITripService } from "./interfaces/ITripService";
+import { ITripAnalysisService } from "./interfaces/ITripAnalysisService";
+import { ITripRepository } from "../repository/interfaces/ITripRepository";
+import { TripMapper } from "../mapper/trip.mapper";
+import {
+  TripAnalysisDTO,
+  TripListResponseDTO,
+} from "../dtos/trip-response.dto";
+import { TripDocument } from "../models/trip.model";
+import { GPSData } from "../dtos/trip.dto";
+import { AppError } from "../utils/AppError";
+import { TRIP_MESSAGES } from "../constants/error-messages";
+import { STATUS_CODES } from "../constants/status-codes";
 
 @injectable()
 export class TripService implements ITripService {
   constructor(
     @inject(TYPES.ITripRepository) private _tripRepo: ITripRepository,
     @inject(TYPES.ITripAnalysisService)
-    private _analysisService: TripAnalysisService,
+    private _analysisService: ITripAnalysisService,
   ) {}
 
-  async createTripFromFile(userId: string, filePath: string) {
+  async createTripFromFile(
+    userId: string,
+    filePath: string,
+    name?: string,
+  ): Promise<TripDocument> {
+    if (!userId)
+      throw new AppError(
+        TRIP_MESSAGES.UNAUTHENTICATED,
+        STATUS_CODES.UNAUTHORIZED,
+      );
+
+    if (!filePath || !fs.existsSync(filePath)) {
+      throw new AppError(
+        TRIP_MESSAGES.FILE_NOT_FOUND,
+        STATUS_CODES.BAD_REQUEST,
+      );
+    }
+
     const results: GPSData[] = [];
 
-    return new Promise((resolve, reject) => {
+    return new Promise<TripDocument>((resolve, reject) => {
       fs.createReadStream(filePath)
         .pipe(csv())
-        .on("data", (data) => {
-          results.push({
-            latitude: parseFloat(data.latitude),
-            longitude: parseFloat(data.longitude),
-            timestamp: data.timestamp,
-            ignition: data.ignition?.trim().toUpperCase() as "ON" | "OFF",
-            speed: 0,
-          });
+        .on("data", (row) => {
+          try {
+            const latitude = parseFloat(row.latitude);
+            const longitude = parseFloat(row.longitude);
+            const timestamp = row.timestamp;
+            const ignition = row.ignition?.trim().toUpperCase();
+
+            if (
+              Number.isNaN(latitude) ||
+              Number.isNaN(longitude) ||
+              !timestamp ||
+              (ignition !== "ON" && ignition !== "OFF")
+            ) {
+              return;
+            }
+
+            results.push({
+              latitude,
+              longitude,
+              timestamp,
+              ignition,
+              speed: 0,
+            });
+          } catch {
+            // skip malformed row
+          }
         })
         .on("end", async () => {
           try {
-            const trip = await this._tripRepo.create({ userId, data: results });
+            if (results.length < 2) {
+              throw new AppError(
+                TRIP_MESSAGES.INSUFFICIENT_POINTS,
+                STATUS_CODES.UNPROCESSABLE_ENTITY,
+              );
+            }
+
+            const safeName =
+              name && name.trim().length > 0 ? name.trim() : "Trip";
+
+            const trip = await this._tripRepo.create({
+              userId,
+              name: safeName,
+              data: results,
+            });
+
             resolve(trip);
           } catch (err) {
             reject(err);
           }
         })
-        .on("error", reject);
+        .on("error", () =>
+          reject(
+            new AppError(
+              TRIP_MESSAGES.CSV_READ_ERROR,
+              STATUS_CODES.BAD_REQUEST,
+            ),
+          ),
+        );
     });
   }
 
-  async getTripAnalysis(id: string,userId:string) {
-    const trip = await this._tripRepo.findById(id);
-    if (!trip) throw new Error("Trip not found");
+  async getTripAnalysis(
+    tripId: string,
+    userId: string,
+  ): Promise<TripAnalysisDTO> {
+    if (!tripId)
+      throw new AppError(
+        TRIP_MESSAGES.TRIP_ID_REQUIRED,
+        STATUS_CODES.BAD_REQUEST,
+      );
 
-     if (trip.userId !== userId) {
-    throw new Error("Unauthorized access");
-  }
+    const trip = await this._tripRepo.findById(tripId);
+    if (!trip)
+      throw new AppError(TRIP_MESSAGES.TRIP_NOT_FOUND, STATUS_CODES.NOT_FOUND);
 
-    const plainTrip = trip.toObject();
+    if (trip.userId !== userId) {
+      throw new AppError(TRIP_MESSAGES.UNAUTHORIZED, STATUS_CODES.FORBIDDEN);
+    }
 
-    const calc = this._analysisService.calculateTrip(plainTrip.data);
+    const plain = trip.toObject();
+
+    if (!plain.data || plain.data.length < 2) {
+      throw new AppError(
+        TRIP_MESSAGES.INSUFFICIENT_DATA,
+        STATUS_CODES.UNPROCESSABLE_ENTITY,
+      );
+    }
+
+    const calc = this._analysisService.calculateTrip(plain.data);
     const analysis = this._analysisService.analyzeTrip(calc.data);
 
-    const totalDuration =
-      (new Date(plainTrip.data[plainTrip.data.length - 1].timestamp).getTime() -
-        new Date(plainTrip.data[0].timestamp).getTime()) /
-      1000;
-
-    return {
-      id: plainTrip._id.toString(),
-      name: plainTrip.name ?? "Trip",
-
-      summary: {
-        distance: calc.totalDistance,
-        duration: totalDuration,
-        idling: analysis.idlingTime,
-        stoppage: analysis.stoppageTime,
-        points: plainTrip.data.length,
-      },
-
-      route: calc.data, 
-
-      createdAt: plainTrip.createdAt,
-    };
+    return TripMapper.toAnalysisDTO(trip, calc, analysis);
   }
 
-  async getAllTrips(userId:string) {
+  async getAllTrips(userId: string): Promise<TripListResponseDTO> {
+    if (!userId)
+      throw new AppError(
+        TRIP_MESSAGES.UNAUTHENTICATED,
+        STATUS_CODES.UNAUTHORIZED,
+      );
+
     const trips = await this._tripRepo.findByUserId(userId);
 
     if (!trips || trips.length === 0) {
       return { trips: [] };
     }
 
-    const formattedTrips = trips.map((trip: any) => {
-      
+    const formattedTrips = trips.map((trip) => {
       const plain = trip.toObject();
+
+      if (!plain.data || plain.data.length < 2) {
+        return null;
+      }
 
       const calc = this._analysisService.calculateTrip(plain.data);
       const analysis = this._analysisService.analyzeTrip(calc.data);
 
-      return {
-        id: plain._id.toString(),
-        distance: calc.totalDistance,
-        idling: analysis.idlingTime,
-        stoppage: analysis.stoppageTime,
-        points: plain.data.length,
-        createdAt: plain.createdAt,
-      };
+      return TripMapper.toListItemDTO(trip, calc, analysis);
     });
 
     return {
-      trips: formattedTrips,
+      trips: formattedTrips.filter(Boolean) as any,
     };
   }
 }

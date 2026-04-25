@@ -1,19 +1,37 @@
 import { GPSData } from "../dtos/trip.dto";
 import { getDistance } from "geolib";
-import { ITripAnalysisService } from "./interfaces/ITripAnalysisService";
+import {
+  TripCalculationResultDTO,
+  TripAnalysisResultDTO,
+  CalculatedGPSData,
+} from "../dtos/trip-analysis.dto";
+import { AppError } from "../utils/AppError";
+import { TRIP_MESSAGES } from "../constants/error-messages";
+import { STATUS_CODES } from "../constants/status-codes";
 
-export class TripAnalysisService implements ITripAnalysisService {
-  calculateTrip(data: GPSData[]) {
+export class TripAnalysisService {
+  calculateTrip(data: GPSData[]): TripCalculationResultDTO {
+    if (!data || data.length < 2) {
+      throw new AppError(TRIP_MESSAGES.INSUFFICIENT_DATA_FOR_CALCULATION,STATUS_CODES.UNPROCESSABLE_ENTITY);
+    }
+
     let totalDistance = 0;
 
-    for (let i = 1; i < data.length; i++) {
-      const prev = data[i - 1];
-      const curr = data[i];
+    const calculatedData: CalculatedGPSData[] = data.map((p) => ({
+      ...p,
+      speed: 0,
+    }));
+
+    for (let i = 1; i < calculatedData.length; i++) {
+      const prev = calculatedData[i - 1];
+      const curr = calculatedData[i];
 
       const distance = getDistance(
         { latitude: prev.latitude, longitude: prev.longitude },
-        { latitude: curr.latitude, longitude: curr.longitude },
+        { latitude: curr.latitude, longitude: curr.longitude }
       );
+
+      if (!Number.isFinite(distance)) continue;
 
       totalDistance += distance;
 
@@ -24,14 +42,18 @@ export class TripAnalysisService implements ITripAnalysisService {
 
       if (timeDiff > 0) {
         const speed = distance / timeDiff;
-        curr.speed = speed * 3.6;
+        curr.speed = Math.max(0, speed * 3.6);
       }
     }
 
-    return { totalDistance, data };
+    return { totalDistance, data: calculatedData };
   }
 
-  analyzeTrip(data: GPSData[]) {
+  analyzeTrip(data: CalculatedGPSData[]): TripAnalysisResultDTO {
+    if (!data || data.length < 2) {
+      return { idlingTime: 0, stoppageTime: 0 };
+    }
+
     let idlingTime = 0;
     let stoppageTime = 0;
 
@@ -43,6 +65,8 @@ export class TripAnalysisService implements ITripAnalysisService {
         (new Date(curr.timestamp).getTime() -
           new Date(prev.timestamp).getTime()) /
         1000;
+
+      if (timeDiff <= 0) continue;
 
       if (curr.ignition === "OFF") {
         stoppageTime += timeDiff;

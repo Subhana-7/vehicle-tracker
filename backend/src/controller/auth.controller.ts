@@ -1,23 +1,49 @@
 import { Request, Response } from "express";
-import { AuthService } from "../service/auth.service";
+import { IAuthController } from "./interface/IAuthController";
+import { injectable, inject } from "inversify";
+import { TYPES } from "../types";
+import { IAuthService } from "../service/interfaces/IAuthService";
 
-export class AuthController {
-  constructor(private authService: AuthService) {}
+import {
+  signupSchema,
+  verifyOtpSchema,
+  loginSchema,
+  resendOtpSchema,
+} from "../validations/auth.validation";
+
+import { validate } from "../utils/validation.util";
+
+@injectable()
+export class AuthController implements IAuthController {
+  constructor(
+    @inject(TYPES.IAuthService)
+    private _authService: IAuthService
+  ) {}
 
   signup = async (req: Request, res: Response) => {
-    await this.authService.signup(req.body);
-    res.json({ message: "OTP sent" });
+    const data = validate(signupSchema, req.body);
+
+    const result = await this._authService.signup(data);
+    res.json(result);
   };
 
   verifyOtp = async (req: Request, res: Response) => {
-    await this.authService.verifyOtp(req.body.email, req.body.otp);
-    res.json({ message: "Verified" });
+    const data = validate(verifyOtpSchema, req.body);
+
+    const result = await this._authService.verifyOtp(
+      data.email,
+      data.otp
+    );
+
+    res.json(result);
   };
 
   login = async (req: Request, res: Response) => {
-    const tokens = await this.authService.login(
-      req.body.email,
-      req.body.password,
+    const data = validate(loginSchema, req.body);
+
+    const tokens = await this._authService.login(
+      data.email,
+      data.password
     );
 
     res.cookie("accessToken", tokens.accessToken, {
@@ -38,7 +64,9 @@ export class AuthController {
   refresh = async (req: Request, res: Response) => {
     const token = req.cookies.refreshToken;
 
-    const data = await this.authService.refresh(token);
+    if (!token) throw new Error("Refresh token missing");
+
+    const data = await this._authService.refresh(token);
 
     res.cookie("accessToken", data.accessToken, {
       httpOnly: true,
@@ -46,12 +74,15 @@ export class AuthController {
       sameSite: "none",
     });
 
-    res.json({ message: "Refreshed" });
+    res.json(data);
   };
 
   resendOtp = async (req: Request, res: Response) => {
-    await this.authService.resendOtp(req.body.email);
-    res.json({ message: "OTP resent" });
+    const data = validate(resendOtpSchema, req.body);
+
+    const result = await this._authService.resendOtp(data.email);
+
+    res.json(result);
   };
 
   logout = async (_req: Request, res: Response) => {

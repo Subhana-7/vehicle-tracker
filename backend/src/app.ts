@@ -5,6 +5,7 @@ import tripRoutes from "./routes/trip.routes";
 import authRoutes from "./routes/auth.routes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import { errorHandler } from "./middleware/error.middleware";
 
 dotenv.config();
 
@@ -21,6 +22,8 @@ app.use(cookieParser());
 
 app.use("/api", tripRoutes);
 app.use("/auth", authRoutes);
+
+app.use(errorHandler)
 
 connectDB().then(() => {
   app.listen(5000, () => console.log("Server running"));

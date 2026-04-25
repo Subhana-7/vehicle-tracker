@@ -1,0 +1,31 @@
+export const AUTH_MESSAGES = {
+  USER_EXISTS: "User already exists",
+  USER_NOT_VERIFIED_EXISTS: "User exists but not verified. Please verify OTP",
+  USER_NOT_FOUND: "User not found",
+  USER_ALREADY_VERIFIED: "User already verified",
+  OTP_NOT_FOUND: "OTP not found",
+  OTP_EXPIRED: "OTP expired",
+  INVALID_OTP: "Invalid OTP",
+  INVALID_LOGIN_METHOD: "Use correct login method",
+  NOT_VERIFIED: "Verify email first",
+  INVALID_CREDENTIALS: "Invalid credentials",
+  REFRESH_TOKEN_MISSING: "Refresh token missing",
+  INVALID_REFRESH_TOKEN: "Invalid or expired refresh token",
+  OTP_RATE_LIMIT: "OTP already sent. Please wait before requesting again",
+  MISSING_EMAIL_OR_OTP:"Email or OTP missing",
+  EMAIL_SERVICE_NOT_CONFIGURED:"Email service not configured",
+  EMAIL_SEND_FAILED:"Failed to send email",
+};
+
+
+export const TRIP_MESSAGES = {
+  UNAUTHENTICATED: "User not authenticated",
+  FILE_NOT_FOUND: "Uploaded file not found",
+  CSV_READ_ERROR: "Failed to read CSV file",
+  INSUFFICIENT_POINTS: "Not enough valid GPS points",
+  TRIP_ID_REQUIRED: "Trip ID required",
+  TRIP_NOT_FOUND: "Trip not found",
+  UNAUTHORIZED: "Unauthorized access",
+  INSUFFICIENT_DATA: "Insufficient trip data",
+  INSUFFICIENT_DATA_FOR_CALCULATION:"Not enough data to calculate trip"
+};

@@ -1,19 +1,17 @@
 import express from "express";
-import { AuthController } from "../controller/auth.controller";
-import { AuthService } from "../service/auth.service";
-import { UserRepository } from "../repository/user.repository";
+import container from "../config/inversify.config";
+import { IAuthController } from "../controller/interface/IAuthController";
+import { TYPES } from "../types";
 
 const router = express.Router();
 
-const repo = new UserRepository();
-const service = new AuthService(repo);
-const controller = new AuthController(service);
+const controller = container.get<IAuthController>(TYPES.IAuthController)
 
-router.post("/signup", controller.signup);
-router.post("/verify-otp", controller.verifyOtp);
-router.post("/login", controller.login);
-router.post("/refresh", controller.refresh);
-router.post("/resend-otp", controller.resendOtp);
-router.post("/logout", controller.logout);
+router.post("/signup", controller.signup.bind(controller));
+router.post("/verify-otp", controller.verifyOtp.bind(controller));
+router.post("/login", controller.login.bind(controller));
+router.post("/refresh", controller.refresh.bind(controller));
+router.post("/resend-otp", controller.resendOtp.bind(controller));
+router.post("/logout", controller.logout.bind(controller));
 
 export default router;

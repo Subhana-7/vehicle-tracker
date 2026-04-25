@@ -1,13 +1,11 @@
+import {
+  TripCalculationResultDTO,
+  TripAnalysisResultDTO,
+  CalculatedGPSData,
+} from "../../dtos/trip-analysis.dto";
 import { GPSData } from "../../dtos/trip.dto";
 
 export interface ITripAnalysisService {
-  calculateTrip(data: GPSData[]): {
-    totalDistance: number;
-    data: GPSData[];
-  };
-
-  analyzeTrip(data: GPSData[]): {
-    idlingTime: number;
-    stoppageTime: number;
-  };
+  calculateTrip(data: GPSData[]): TripCalculationResultDTO;
+  analyzeTrip(data: CalculatedGPSData[]): TripAnalysisResultDTO;
 }

@@ -1,5 +1,17 @@
+import {
+  TripAnalysisDTO,
+  TripListResponseDTO,
+} from "../../dtos/trip-response.dto";
+import { TripDocument } from "../../models/trip.model";
+
 export interface ITripService {
-  createTripFromFile(userId: string, filePath: string): Promise<any>;
-  getTripAnalysis(id: string,userId:string): Promise<any>;
-  getAllTrips(userId:string):Promise<any>;
+  createTripFromFile(
+    userId: string,
+    filePath: string,
+    name?: string,
+  ): Promise<TripDocument>;
+
+  getTripAnalysis(tripId: string, userId: string): Promise<TripAnalysisDTO>;
+
+  getAllTrips(userId: string): Promise<TripListResponseDTO>;
 }

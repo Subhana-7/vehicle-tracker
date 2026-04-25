@@ -1,7 +1,16 @@
+import {
+  SignupRequestDTO,
+  SignupResponseDTO,
+  VerifyOtpResponseDTO,
+  AuthTokensDTO,
+  RefreshTokenResponseDTO,
+  ResendOtpResponseDTO,
+} from "../../dtos/auth.dto";
+
 export interface IAuthService {
-  signup(data: any): Promise<void>;
-  verifyOtp(email: string, otp: string): Promise<void>;
-  login(email: string, password: string): Promise<any>;
-  refresh(token: string): Promise<any>;
-  resendOtp(email: string): Promise<void>;
+  signup(data: SignupRequestDTO): Promise<SignupResponseDTO>;
+  verifyOtp(email: string, otp: string): Promise<VerifyOtpResponseDTO>;
+  login(email: string, password: string): Promise<AuthTokensDTO>;
+  refresh(token: string): Promise<RefreshTokenResponseDTO>;
+  resendOtp(email: string): Promise<ResendOtpResponseDTO>;
 }
