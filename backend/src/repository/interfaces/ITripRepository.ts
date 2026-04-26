@@ -4,5 +4,6 @@ import { TripDocument } from "../../models/trip.model";
 export interface ITripRepository {
   findByUserId(userId: string): Promise<TripDocument[]>;
   create(data: Partial<any>): Promise<any>
-  findById(id: string): Promise<any | null>
+  findById(id: string): Promise<any | null>;
+  deleteManyByIds(userId: string, ids: string[]): Promise<number>;
 }

@@ -14,4 +14,6 @@ export interface ITripService {
   getTripAnalysis(tripId: string, userId: string): Promise<TripAnalysisDTO>;
 
   getAllTrips(userId: string): Promise<TripListResponseDTO>;
+
+  deleteTrips(userId: string, ids: string[]): Promise<{ deletedCount: number }>;
 }

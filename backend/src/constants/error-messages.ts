@@ -12,11 +12,10 @@ export const AUTH_MESSAGES = {
   REFRESH_TOKEN_MISSING: "Refresh token missing",
   INVALID_REFRESH_TOKEN: "Invalid or expired refresh token",
   OTP_RATE_LIMIT: "OTP already sent. Please wait before requesting again",
-  MISSING_EMAIL_OR_OTP:"Email or OTP missing",
-  EMAIL_SERVICE_NOT_CONFIGURED:"Email service not configured",
-  EMAIL_SEND_FAILED:"Failed to send email",
+  MISSING_EMAIL_OR_OTP: "Email or OTP missing",
+  EMAIL_SERVICE_NOT_CONFIGURED: "Email service not configured",
+  EMAIL_SEND_FAILED: "Failed to send email",
 };
-
 
 export const TRIP_MESSAGES = {
   UNAUTHENTICATED: "User not authenticated",
@@ -27,5 +26,7 @@ export const TRIP_MESSAGES = {
   TRIP_NOT_FOUND: "Trip not found",
   UNAUTHORIZED: "Unauthorized access",
   INSUFFICIENT_DATA: "Insufficient trip data",
-  INSUFFICIENT_DATA_FOR_CALCULATION:"Not enough data to calculate trip"
+  INSUFFICIENT_DATA_FOR_CALCULATION: "Not enough data to calculate trip",
+  DELETE_IDS_REQUIRED: "Trip ids required",
+  DELETE_SUCCESS: "Trips deleted successfully",
 };

@@ -171,4 +171,34 @@ export class TripService implements ITripService {
       trips: formattedTrips.filter(Boolean) as any,
     };
   }
+
+async deleteTrips(userId: string, tripIds: string[]): Promise<{ deletedCount: number }> {
+
+  if (!userId) {
+    throw new AppError(
+      TRIP_MESSAGES.UNAUTHENTICATED,
+      STATUS_CODES.UNAUTHORIZED
+    );
+  }
+
+  if (!tripIds || tripIds.length === 0) {
+    throw new AppError(
+      TRIP_MESSAGES.DELETE_IDS_REQUIRED,
+      STATUS_CODES.BAD_REQUEST
+    );
+  }
+
+  const uniqueIds = [...new Set(tripIds)];
+
+  const deletedCount = await this._tripRepo.deleteManyByIds(userId, uniqueIds);
+
+  if (deletedCount === 0) {
+    throw new AppError(
+      TRIP_MESSAGES.TRIP_NOT_FOUND,
+      STATUS_CODES.NOT_FOUND
+    );
+  }
+
+  return { deletedCount };
+}
 }

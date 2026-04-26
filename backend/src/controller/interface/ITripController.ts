@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
+import { AuthRequest } from "../../middleware/auth.middleware";
 
 export interface ITripController {
-  uploadTrip(req: Request, res: Response): Promise<any>;
-  getTrip(req: Request, res: Response): Promise<any>;
-  getAllTrips(req:Request,res:Response):Promise<any>;
+  uploadTrip(req: AuthRequest, res: Response): Promise<void>;
+  getTrip(req: AuthRequest, res: Response): Promise<void>;
+  getAllTrips(req:AuthRequest,res:Response):Promise<void>;
+  deleteTrips(req: AuthRequest, res: Response):Promise<void>
 }

@@ -19,6 +19,12 @@ router.post(
 
 router.get("/trip/:id",verifyAccessToken, controller.getTrip.bind(controller));
 
-router.get("/trips",verifyAccessToken,controller.getAllTrips.bind(controller))
+router.get("/trips",verifyAccessToken,controller.getAllTrips.bind(controller));
+
+router.delete(
+  "/trips",
+  verifyAccessToken,
+  controller.deleteTrips.bind(controller)
+);
 
 export default router;

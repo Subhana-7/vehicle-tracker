@@ -9,7 +9,9 @@ import { validate } from "../utils/validation.util";
 import {
   tripIdParamSchema,
   uploadTripBodySchema,
+  deleteTripsSchema
 } from "../validations/trip.validation";
+import { TRIP_MESSAGES } from "../constants/error-messages";
 
 @injectable()
 export class TripController implements ITripController {
@@ -29,7 +31,7 @@ export class TripController implements ITripController {
     const trip = await this._tripService.createTripFromFile(
       userId,
       req.file.path,
-      body.name // optional name
+      body.name 
     );
 
     res.json(trip);
@@ -55,4 +57,20 @@ export class TripController implements ITripController {
 
     res.json(result);
   }
+
+  async deleteTrips(req: AuthRequest, res: Response) {
+  const body = validate(deleteTripsSchema, req.body);
+
+  const userId = req.user!.id;
+
+  const result = await this._tripService.deleteTrips(
+    userId,
+    body.ids
+  );
+
+  res.json({
+    message: TRIP_MESSAGES.DELETE_SUCCESS,
+    ...result,
+  });
+}
 }
