@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import {TripItem } from "../components/Table";
+import { TripItem } from "../components/Table";
 import { Pagination } from "../components/Pagination";
 import { DashboardLayout } from "../components/DashboardLayout";
 import { Card } from "../components/CardComponent";
@@ -8,32 +8,39 @@ import { Modal } from "../components/Modal";
 import { useNavigate } from "react-router-dom";
 
 type Trip = {
-  id:number,
-  name:string,
-}
+  id: number;
+  name: string;
+};
 
 type TripListProps = {
-  trips:Trip[];
-  selectedIds:number[],
-  onToggle:(id:string) => void;
-  onDelete:(id:string) => void;
-  onOpen:(id:string) => void;
-}
+  trips: Trip[];
+  selectedIds: number[];
+  onToggle: (id: number) => void;
+  onDelete: (id: number) => void;
+  onOpen: (id: number) => void;
+};
 
 import { getAllTrips } from "../services/trip.service";
 
-
-const TOTAL_PAGES = 10;
-
-const TripList = ({ trips, selectedIds, onToggle, onDelete, onOpen }:TripListProps) => (
+const TripList = ({
+  trips,
+  selectedIds,
+  onToggle,
+  onDelete,
+  onOpen,
+}: TripListProps) => (
   <div className="w-full">
     {/* Desktop/Tablet header row */}
     <div className="hidden sm:flex items-center px-4 py-2 bg-gray-50 border-b border-gray-200 rounded-t-lg">
-      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Trips</span>
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+        Trips
+      </span>
     </div>
     {/* Mobile header */}
     <div className="flex sm:hidden items-center px-3 py-2">
-      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Trips</span>
+      <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+        Trips
+      </span>
     </div>
 
     {trips.map((trip, idx) => (
@@ -55,32 +62,42 @@ export default function TripsPage() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  const fetchTrips = async () => {
+    const data = await getAllTrips();
+    const sorted = [...data].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+    setTrips(sorted);
+  };
 
   useEffect(() => {
-    const fetchTrips = async () => {
-      const data = await getAllTrips();
-      setTrips(data);
-    };
-
     fetchTrips();
   }, []);
 
-  console.log('---',trips)
-
-  const handleToggle = (id:string) =>
-    setSelectedIds((prev:any) =>
-      prev.includes(id) ? prev.filter((x:any) => x !== id) : [...prev, id]
+  const handleToggle = (id: number) =>
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
 
-  const handleDelete = (id:string) => {
-    // TODO: wire to API
+  const handleDelete = (id: number) => {
     console.log("Delete trip:", id);
   };
 
-  const handleOpen = (id: string) => {
-  navigate(`/trips/details/${id}`);
-};
+  const handleOpen = (id: number) => {
+    navigate(`/trips/details/${id}`);
+  };
+
+  const PAGE_SIZE = 8;
+
+  const paginatedTrips = trips.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE,
+  );
+
+  const totalPages = Math.ceil(trips.length / PAGE_SIZE);
 
   return (
     <DashboardLayout>
@@ -92,8 +109,14 @@ export default function TripsPage() {
       {/* Upload Action Card */}
       <Card className="p-4 sm:p-5 mb-6 w-full">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <Button text="Upload Trip" variant="primary" onClick={() => setModalOpen(true)} />
-          <p className="text-sm text-gray-400">Upload the Excel sheet of your trip</p>
+          <Button
+            text="Upload Trip"
+            variant="primary"
+            onClick={() => setModalOpen(true)}
+          />
+          <p className="text-sm text-gray-400">
+            Upload the Excel sheet of your trip
+          </p>
         </div>
       </Card>
 
@@ -123,7 +146,7 @@ export default function TripsPage() {
 
         <Card className="overflow-hidden">
           <TripList
-            trips={trips}
+            trips={paginatedTrips}
             selectedIds={selectedIds}
             onToggle={handleToggle}
             onDelete={handleDelete}
@@ -131,12 +154,16 @@ export default function TripsPage() {
           />
           <Pagination
             currentPage={currentPage}
-            totalPages={TOTAL_PAGES}
+            totalPages={totalPages}
             onPageChange={setCurrentPage}
           />
         </Card>
       </div>
-       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onUploadSuccess={fetchTrips}
+      />
     </DashboardLayout>
   );
 }

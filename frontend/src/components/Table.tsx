@@ -128,9 +128,9 @@ export const TripItem = ({
   <>
     {/* Desktop / Tablet */}
     <div
-      className={`hidden sm:flex items-center justify-between px-4 py-2.5 border-b border-gray-100 hover:bg-gray-50 transition ${isFirst ? "border-t border-gray-100" : ""}`}
+      className={`hidden sm:flex items-center justify-between px-4 py-2.5 border-b border-gray-100 hover:bg-gray-50 transition cursor-pointer ${isFirst ? "border-t border-gray-100" : ""}`} onClick={() => onOpen(trip.id)}
     >
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-3 min-w-0" onClick={(e) => e.stopPropagation()}>
         <input
           type="checkbox"
           checked={isSelected}

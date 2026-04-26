@@ -48,7 +48,11 @@ const DashboardPage = () => {
       </Card>
 
       {/* Upload Modal */}
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onUploadSuccess={() => navigate("/trips")}
+      />
     </DashboardLayout>
   );
 };

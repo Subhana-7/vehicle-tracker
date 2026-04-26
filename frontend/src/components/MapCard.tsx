@@ -10,7 +10,7 @@ export const MapCard = ({
   children,
 }:MapCardProps) => (
   <Card className="overflow-hidden">
-    <div className={`relative w-full "h-[250px] sm:h-85 md:h-[400px]" bg-gray-100 overflow-hidden`}>
+    <div className="relative w-full h-62.5 sm:h-85 md:h-100 bg-gray-100 overflow-hidden">
       {children ?? (
         /* Static SVG map placeholder — replace children with <MapContainer> for Leaflet */
         <svg viewBox="0 0 560 300" className="w-full h-full" preserveAspectRatio="xMidYMid slice">

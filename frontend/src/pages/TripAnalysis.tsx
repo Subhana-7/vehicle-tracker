@@ -11,6 +11,8 @@ import { DashboardLayout } from "../components/DashboardLayout";
 import { TripMap } from "../components/TripMap";
 import { Pagination } from "../components/Pagination";
 import { useParams } from "react-router-dom";
+import { Modal } from "../components/Modal";
+import { useNavigate } from "react-router-dom";
 
 type Tab = { id: string; name: string };
 
@@ -18,36 +20,30 @@ export default function TripDetailsPage() {
   const [tabs, setTabs] = useState<Tab[]>([]);
   const [activeTripId, setActiveTripId] = useState<string | null>(null);
   const [trip, setTrip] = useState<TripDetails | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 8;
 
   const { id } = useParams();
 
+  const navigate = useNavigate();
+
   // Load all trips
-  useEffect(() => {
+
     const loadTrips = async () => {
       const data = await getAllTrips();
       setTabs(data);
-
-      // if (data.length > 0) {
-      //   setActiveTripId(data[0].id);
-      // }
-      useEffect(() => {
-  if (!id) return;
-
-  setActiveTripId(id);
-}, [id]);
     };
-
+  useEffect(() => {
     loadTrips();
   }, []);
 
   useEffect(() => {
-  if (!id) return;
+    if (!id) return;
 
-  setActiveTripId(id);
-}, [id]);
+    setActiveTripId(id);
+  }, [id]);
 
   console.log("tabs", tabs);
 
@@ -118,7 +114,20 @@ export default function TripDetailsPage() {
 
   return (
     <DashboardLayout>
-      <HeaderCard title={trip?.name ?? "Trips"} onNew={() => {}} />
+      <div className="flex items-center gap-2 mb-2">
+        <button
+          onClick={() => navigate(-1)}
+          className="px-3 py-1  hover:bg-gray-100"
+        >
+          ←
+        </button>
+      </div>
+      <HeaderCard
+        title={trip?.name ?? "Trips"}
+        onNew={() => setModalOpen(true)}
+      />
+
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} onUploadSuccess={loadTrips} />
 
       <Legend />
 

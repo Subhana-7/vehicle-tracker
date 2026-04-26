@@ -7,24 +7,51 @@ import { LoginInput } from "../components/InputComponent";
 import { LoginButton } from "../components/Button";
 import { AuthLayout } from "../components/AuthLayout";
 import { useAuthStore } from "../store/auth.store";
+import { StatusModal } from "../components/StatusModal";
 
 const LoginPage = () => {
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {},
+  );
+  const [modal, setModal] = useState({
+    open: false,
+    type: "error",
+    message: "",
+  });
 
   const login = useAuthStore((s) => s.login);
 
-const handleSubmit = async (e: any) => {
-  e.preventDefault();
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    if (!validate()) return;
 
-  try {
-    await login(email, password);
-    navigate("/dashboard");
-  } catch (err: any) {
-    alert(err.response?.data?.message || "Login failed");
-  }
-};
+    try {
+      await login(email, password);
+      navigate("/dashboard");
+    } catch (err: any) {
+      setModal({
+        open: true,
+        type: "error",
+        message: err.response?.data?.message || "Login failed",
+      });
+    }
+  };
+
+  const validate = () => {
+    const newErrors: any = {};
+
+    if (!email) newErrors.email = "Email is required";
+    else if (!/^\S+@\S+\.\S+$/.test(email)) newErrors.email = "Invalid email";
+
+    if (!password) newErrors.password = "Password is required";
+    else if (password.length < 8) newErrors.password = "Minimum 8 characters";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   return (
     <AuthLayout>
@@ -46,6 +73,7 @@ const handleSubmit = async (e: any) => {
             placeholder="Example@email.com"
             value={email}
             onChange={(e: any) => setEmail(e.target.value)}
+            error={errors.email}
           />
           <LoginInput
             id="password"
@@ -54,6 +82,7 @@ const handleSubmit = async (e: any) => {
             placeholder="At least 8 characters"
             value={password}
             onChange={(e: any) => setPassword(e.target.value)}
+            error={errors.password}
           />
           <LoginButton text="Sign in" />
         </form>
@@ -69,6 +98,15 @@ const handleSubmit = async (e: any) => {
           </Link>
         </p>
       </LoginCard>
+      <StatusModal
+        isOpen={modal.open}
+        onClose={() => {
+          setModal({ ...modal, open: false });
+          if (modal.type === "success") navigate("/");
+        }}
+        type={modal.type as any}
+        message={modal.message}
+      />
     </AuthLayout>
   );
 };
