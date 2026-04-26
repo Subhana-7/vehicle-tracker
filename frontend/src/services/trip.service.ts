@@ -48,3 +48,18 @@ export const uploadTripFile = async (file: File): Promise<UploadResponse> => {
     throw new Error(err.response?.data?.message || "Upload failed");
   }
 };
+
+
+export const deleteTrips = async (ids: string[]) => {
+  try {
+    const res = await axios.delete(`${API}/api/trips`, {
+      data: { ids }, 
+      withCredentials: true,
+    });
+
+    return res.data;
+  } catch (error) {
+    const err = error as AxiosError<{ message: string }>;
+    throw new Error(err.response?.data?.message || "Delete failed");
+  }
+};

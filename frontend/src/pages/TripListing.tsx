@@ -8,27 +8,21 @@ import { Modal } from "../components/Modal";
 import { useNavigate } from "react-router-dom";
 
 type Trip = {
-  id: number;
+  id: string;
   name: string;
 };
 
 type TripListProps = {
   trips: Trip[];
-  selectedIds: number[];
-  onToggle: (id: number) => void;
-  onDelete: (id: number) => void;
+  selectedIds: string[];
+  onToggle: (id: string) => void;
   onOpen: (id: number) => void;
 };
 
-import { getAllTrips } from "../services/trip.service";
+import { deleteTrips, getAllTrips } from "../services/trip.service";
+import { StatusModal } from "../components/StatusModal";
 
-const TripList = ({
-  trips,
-  selectedIds,
-  onToggle,
-  onDelete,
-  onOpen,
-}: TripListProps) => (
+const TripList = ({ trips, selectedIds, onToggle, onOpen }: TripListProps) => (
   <div className="w-full">
     {/* Desktop/Tablet header row */}
     <div className="hidden sm:flex items-center px-4 py-2 bg-gray-50 border-b border-gray-200 rounded-t-lg">
@@ -49,7 +43,6 @@ const TripList = ({
         trip={trip}
         isSelected={selectedIds.includes(trip.id)}
         onToggle={onToggle}
-        onDelete={onDelete}
         onOpen={onOpen}
         isFirst={idx === 0}
       />
@@ -59,9 +52,15 @@ const TripList = ({
 
 export default function TripsPage() {
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
+  const [statusModal, setStatusModal] = useState({
+    isOpen: false,
+    type: "success" as "success" | "error",
+    message: "",
+  });
+
   const navigate = useNavigate();
 
   const fetchTrips = async () => {
@@ -77,17 +76,36 @@ export default function TripsPage() {
     fetchTrips();
   }, []);
 
-  const handleToggle = (id: number) =>
+  const handleToggle = (id: string) =>
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
 
-  const handleDelete = (id: number) => {
-    console.log("Delete trip:", id);
-  };
-
   const handleOpen = (id: number) => {
     navigate(`/trips/details/${id}`);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+
+    try {
+      await deleteTrips(selectedIds);
+
+      setTrips((prev) => prev.filter((t) => !selectedIds.includes(t.id)));
+      setSelectedIds([]);
+
+      setStatusModal({
+        isOpen: true,
+        type: "success",
+        message: "Trips deleted successfully",
+      });
+    } catch (err: any) {
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        message: err.message || "Delete failed",
+      });
+    }
   };
 
   const PAGE_SIZE = 8;
@@ -125,23 +143,15 @@ export default function TripsPage() {
         {/* Section header with bulk actions */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-semibold text-gray-800">Your Trips</h2>
-          {/* Desktop bulk actions — only visible when items selected */}
-          {selectedIds.length > 0 && (
-            <div className="hidden sm:flex items-center gap-2">
-              <Button
-                text="Delete"
-                variant="secondary"
-                size="sm"
-                onClick={() => console.log("Bulk delete:", selectedIds)}
-              />
-              <Button
-                text="Open"
-                variant="open"
-                size="sm"
-                onClick={() => console.log("Bulk open:", selectedIds)}
-              />
-            </div>
-          )}
+          <div className="hidden sm:flex items-center gap-2">
+            <Button
+              text="Delete"
+              variant="secondary"
+              size="sm"
+              disabled={selectedIds.length === 0}
+              onClick={handleBulkDelete}
+            />
+          </div>
         </div>
 
         <Card className="overflow-hidden">
@@ -149,7 +159,6 @@ export default function TripsPage() {
             trips={paginatedTrips}
             selectedIds={selectedIds}
             onToggle={handleToggle}
-            onDelete={handleDelete}
             onOpen={handleOpen}
           />
           <Pagination
@@ -163,6 +172,12 @@ export default function TripsPage() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onUploadSuccess={fetchTrips}
+      />
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        type={statusModal.type}
+        message={statusModal.message}
+        onClose={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
       />
     </DashboardLayout>
   );

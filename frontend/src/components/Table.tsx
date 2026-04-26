@@ -1,6 +1,4 @@
 import { IgnitionBadge } from "./Badge";
-import { Button } from "./Button";
-import { ChevronRightRowIcon, TrashIcon } from "./Icons";
 import { Card } from "./CardComponent";
 
 export const TripTable = ({ logs }: any) => (
@@ -121,7 +119,6 @@ export const TripItem = ({
   trip,
   isSelected,
   onToggle,
-  onDelete,
   onOpen,
   isFirst,
 }: any) => (
@@ -140,27 +137,14 @@ export const TripItem = ({
         />
         <span className="text-sm text-gray-700 truncate">{trip.name}</span>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <Button
-          text="Delete"
-          variant="secondary"
-          size="sm"
-          onClick={() => onDelete(trip.id)}
-        />
-        <Button
-          text="Open"
-          variant="open"
-          size="sm"
-          onClick={() => onOpen(trip.id)}
-        />
-      </div>
+      
     </div>
     {/* Mobile */}
     <div
       className={`flex sm:hidden items-center justify-between px-3 py-3.5 border-b border-gray-100 hover:bg-gray-50 transition ${isFirst ? "border-t border-gray-100" : ""}`}
     >
       <span className="text-sm text-gray-700">{trip.name}</span>
-      <div className="flex items-center gap-3 text-gray-400">
+      {/* <div className="flex items-center gap-3 text-gray-400">
         <button
           onClick={() => onDelete(trip.id)}
           className="hover:text-red-400 transition cursor-pointer p-1"
@@ -175,7 +159,7 @@ export const TripItem = ({
         >
           <ChevronRightRowIcon />
         </button>
-      </div>
+      </div> */}
     </div>
   </>
 );
