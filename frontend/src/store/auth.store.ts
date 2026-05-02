@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import { loginUser } from "../services/auth.service";
 
 type AuthState = {
@@ -10,26 +11,33 @@ type AuthState = {
   setAuth: (value: boolean) => void;
 };
 
-export const useAuthStore = create<AuthState>((set) => ({
-  isAuthenticated: false,
-  loading: false,
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      isAuthenticated: false,
+      loading: false,
 
-  login: async (email, password) => {
-    try {
-      set({ loading: true });
+      login: async (email, password) => {
+        try {
+          set({ loading: true });
 
-      await loginUser({ email, password });
+          await loginUser({ email, password });
 
-      set({ isAuthenticated: true, loading: false });
-    } catch (err) {
-      set({ isAuthenticated: false, loading: false });
-      throw err;
+          set({ isAuthenticated: true, loading: false });
+        } catch (err) {
+          set({ isAuthenticated: false, loading: false });
+          throw err;
+        }
+      },
+
+      logout: () => {
+        set({ isAuthenticated: false });
+      },
+
+      setAuth: (value) => set({ isAuthenticated: value }),
+    }),
+    {
+      name: "auth-storage",
     }
-  },
-
-  logout: () => {
-    set({ isAuthenticated: false });
-  },
-
-  setAuth: (value) => set({ isAuthenticated: value }),
-}));
+  )
+);

@@ -1,21 +1,28 @@
 import axios, { AxiosError } from "axios";
 import type { UploadError, UploadResponse } from "../types/upload";
 import type { TripDetails, TripsResponse } from "../types/trip";
+import { TRIP_ROUTES } from "../constants/routes";
 
 const API = import.meta.env.VITE_SERVER_URL;
 
 export const getTripById = async (id: string): Promise<TripDetails> => {
-  const res = await axios.get<TripDetails>(`${API}/api/trip/${id}`, {
-    withCredentials: true,
-  });
+  const res = await axios.get<TripDetails>(
+    `${API}${TRIP_ROUTES.base}${TRIP_ROUTES.details}/${id}`,
+    {
+      withCredentials: true,
+    },
+  );
 
   return res.data;
 };
 
 export const getAllTrips = async () => {
-  const res = await axios.get<TripsResponse>(`${API}/api/trips`, {
-    withCredentials: true,
-  });
+  const res = await axios.get<TripsResponse>(
+    `${API}${TRIP_ROUTES.base}${TRIP_ROUTES.trips}`,
+    {
+      withCredentials: true,
+    },
+  );
 
   const trips = res.data.trips;
 
@@ -36,7 +43,7 @@ export const uploadTripFile = async (file: File): Promise<UploadResponse> => {
 
   try {
     const res = await axios.post<UploadResponse>(
-      `${API}/api/upload`,
+      `${API}${TRIP_ROUTES.base}${TRIP_ROUTES.upload}`,
       formData,
       {
         withCredentials: true,
@@ -49,13 +56,15 @@ export const uploadTripFile = async (file: File): Promise<UploadResponse> => {
   }
 };
 
-
 export const deleteTrips = async (ids: string[]) => {
   try {
-    const res = await axios.delete(`${API}/api/trips`, {
-      data: { ids }, 
-      withCredentials: true,
-    });
+    const res = await axios.delete(
+      `${API}${TRIP_ROUTES.base}${TRIP_ROUTES.trips}`,
+      {
+        data: { ids },
+        withCredentials: true,
+      },
+    );
 
     return res.data;
   } catch (error) {
