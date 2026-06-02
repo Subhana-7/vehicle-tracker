@@ -31,11 +31,14 @@ export class AuthService implements IAuthService {
     const existing = await this._userRepo.findByEmail(data.email);
 
     if (existing && existing.isVerified) {
-      throw new AppError(AUTH_MESSAGES.USER_EXISTS,STATUS_CODES.CONFLICT);
+      throw new AppError(AUTH_MESSAGES.USER_EXISTS, STATUS_CODES.CONFLICT);
     }
 
     if (existing && !existing.isVerified) {
-      throw new AppError(AUTH_MESSAGES.USER_NOT_VERIFIED_EXISTS,STATUS_CODES.CONFLICT);
+      throw new AppError(
+        AUTH_MESSAGES.USER_NOT_VERIFIED_EXISTS,
+        STATUS_CODES.CONFLICT,
+      );
     }
 
     const hashed = await hashPassword(data.password);
@@ -50,28 +53,38 @@ export class AuthService implements IAuthService {
 
     await this._emailService.sendOtpEmail(data.email, otp);
 
+    //newly added to remove verify otp for now
+    await this._userRepo.updateByEmail(data.email, {
+      isVerified: true,
+      otp: undefined,
+    });
+
     return AuthMapper.toSignupResponse();
   }
 
   async verifyOtp(email: string, otp: string): Promise<VerifyOtpResponseDTO> {
     const user = await this._userRepo.findByEmail(email);
 
-    if (!user) throw new AppError(AUTH_MESSAGES.USER_NOT_FOUND,STATUS_CODES.NOT_FOUND);
+    if (!user)
+      throw new AppError(AUTH_MESSAGES.USER_NOT_FOUND, STATUS_CODES.NOT_FOUND);
 
     if (user.isVerified) {
-      throw new AppError(AUTH_MESSAGES.USER_ALREADY_VERIFIED,STATUS_CODES.BAD_REQUEST);
+      throw new AppError(
+        AUTH_MESSAGES.USER_ALREADY_VERIFIED,
+        STATUS_CODES.BAD_REQUEST,
+      );
     }
 
     if (!user.otp) {
-      throw new AppError(AUTH_MESSAGES.OTP_NOT_FOUND,STATUS_CODES.BAD_REQUEST);
+      throw new AppError(AUTH_MESSAGES.OTP_NOT_FOUND, STATUS_CODES.BAD_REQUEST);
     }
 
     if (user.otp.expiresAt < new Date()) {
-      throw new AppError(AUTH_MESSAGES.OTP_EXPIRED,STATUS_CODES.BAD_REQUEST);
+      throw new AppError(AUTH_MESSAGES.OTP_EXPIRED, STATUS_CODES.BAD_REQUEST);
     }
 
     if (user.otp.code !== otp) {
-      throw new AppError(AUTH_MESSAGES.INVALID_OTP,STATUS_CODES.BAD_REQUEST);
+      throw new AppError(AUTH_MESSAGES.INVALID_OTP, STATUS_CODES.BAD_REQUEST);
     }
 
     await this._userRepo.updateByEmail(email, {
@@ -85,20 +98,27 @@ export class AuthService implements IAuthService {
   async login(email: string, password: string): Promise<AuthTokensDTO> {
     const user = await this._userRepo.findByEmail(email);
 
-    if (!user) throw new AppError(AUTH_MESSAGES.USER_NOT_FOUND,STATUS_CODES.NOT_FOUND);
+    if (!user)
+      throw new AppError(AUTH_MESSAGES.USER_NOT_FOUND, STATUS_CODES.NOT_FOUND);
 
     if (!user.password) {
-      throw new AppError(AUTH_MESSAGES.INVALID_LOGIN_METHOD,STATUS_CODES.BAD_REQUEST);
+      throw new AppError(
+        AUTH_MESSAGES.INVALID_LOGIN_METHOD,
+        STATUS_CODES.BAD_REQUEST,
+      );
     }
 
     if (!user.isVerified) {
-      throw new AppError(AUTH_MESSAGES.NOT_VERIFIED,STATUS_CODES.FORBIDDEN);
+      throw new AppError(AUTH_MESSAGES.NOT_VERIFIED, STATUS_CODES.FORBIDDEN);
     }
 
     const isMatch = await comparePassword(password, user.password);
 
     if (!isMatch) {
-      throw new AppError(AUTH_MESSAGES.INVALID_CREDENTIALS,STATUS_CODES.UNAUTHORIZED);
+      throw new AppError(
+        AUTH_MESSAGES.INVALID_CREDENTIALS,
+        STATUS_CODES.UNAUTHORIZED,
+      );
     }
 
     const payload = { id: user._id };
@@ -113,7 +133,10 @@ export class AuthService implements IAuthService {
 
   async refresh(token: string): Promise<RefreshTokenResponseDTO> {
     if (!token) {
-      throw new AppError(AUTH_MESSAGES.REFRESH_TOKEN_MISSING,STATUS_CODES.UNAUTHORIZED);
+      throw new AppError(
+        AUTH_MESSAGES.REFRESH_TOKEN_MISSING,
+        STATUS_CODES.UNAUTHORIZED,
+      );
     }
 
     let decoded: any;
@@ -121,15 +144,22 @@ export class AuthService implements IAuthService {
     try {
       decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET!);
     } catch {
-      throw new AppError(AUTH_MESSAGES.INVALID_REFRESH_TOKEN,STATUS_CODES.UNAUTHORIZED);
+      throw new AppError(
+        AUTH_MESSAGES.INVALID_REFRESH_TOKEN,
+        STATUS_CODES.UNAUTHORIZED,
+      );
     }
 
     const user = await this._userRepo.findById(decoded.id);
 
-    if (!user) throw new AppError(AUTH_MESSAGES.USER_NOT_FOUND,STATUS_CODES.NOT_FOUND);
+    if (!user)
+      throw new AppError(AUTH_MESSAGES.USER_NOT_FOUND, STATUS_CODES.NOT_FOUND);
 
     if (!user.refreshToken || user.refreshToken !== token) {
-      throw new AppError(AUTH_MESSAGES.OTP_RATE_LIMIT,STATUS_CODES.UNAUTHORIZED);
+      throw new AppError(
+        AUTH_MESSAGES.OTP_RATE_LIMIT,
+        STATUS_CODES.UNAUTHORIZED,
+      );
     }
 
     const accessToken = generateAccessToken({ id: user._id });
@@ -140,12 +170,16 @@ export class AuthService implements IAuthService {
   async resendOtp(email: string): Promise<ResendOtpResponseDTO> {
     const user = await this._userRepo.findByEmail(email);
 
-    console.log(user?.otp?.expiresAt)
+    console.log(user?.otp?.expiresAt);
 
-    if (!user) throw new AppError(AUTH_MESSAGES.USER_NOT_FOUND,STATUS_CODES.NOT_FOUND);
+    if (!user)
+      throw new AppError(AUTH_MESSAGES.USER_NOT_FOUND, STATUS_CODES.NOT_FOUND);
 
     if (user.isVerified) {
-      throw new AppError(AUTH_MESSAGES.USER_ALREADY_VERIFIED,STATUS_CODES.BAD_REQUEST);
+      throw new AppError(
+        AUTH_MESSAGES.USER_ALREADY_VERIFIED,
+        STATUS_CODES.BAD_REQUEST,
+      );
     }
 
     const otp = generateOtp();

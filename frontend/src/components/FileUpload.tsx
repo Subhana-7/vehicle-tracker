@@ -2,6 +2,7 @@ import { useRef } from "react";
 
 type FileUploadBoxProps = {
   onFileSelect: (file: File) => void;
+  onError?: (message: string) => void;
   fileName?: string;
 };
 
@@ -12,13 +13,24 @@ const ALLOWED_TYPES = [
 ];
 
 export const UploadIcon = () => (
-  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2">
+  <svg
+    width="36"
+    height="36"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#38bdf8"
+    strokeWidth="2"
+  >
     <path d="M12 16V4M12 4L8 8M12 4L16 8" />
     <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
   </svg>
 );
 
-export const FileUploadBox = ({ onFileSelect, fileName }: FileUploadBoxProps) => {
+export const FileUploadBox = ({
+  onFileSelect,
+  onError,
+  fileName,
+}: FileUploadBoxProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,7 +38,8 @@ export const FileUploadBox = ({ onFileSelect, fileName }: FileUploadBoxProps) =>
     if (!file) return;
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      alert("Only Excel files (.xlsx, .xls, .csv) are allowed");
+      onError?.("Only Excel files (.xlsx, .xls, .csv) are allowed");
+      e.target.value = "";
       return;
     }
 
@@ -44,7 +57,8 @@ export const FileUploadBox = ({ onFileSelect, fileName }: FileUploadBoxProps) =>
         <p className="text-sm text-blue-600 font-medium">{fileName}</p>
       ) : (
         <p className="text-sm text-blue-500 text-center">
-          Click to upload <span className="underline font-semibold">Excel</span> file
+          Click to upload <span className="underline font-semibold">Excel</span>{" "}
+          file
         </p>
       )}
 

@@ -32,7 +32,17 @@ const SignupPage = () => {
 
     try {
       await signupUser({ name, email, password });
-      navigate("/verify-otp", { state: { email } });
+
+      setModal({
+        open: true,
+        type: "success",
+        message: "Signup Success, Log-in to Continue",
+      });
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+      //---- for now verify otp is not needed ----
+      // navigate("/verify-otp", { state: { email } });
     } catch (err: any) {
       const status = err.response?.status;
       const message = err.response?.data?.message;
