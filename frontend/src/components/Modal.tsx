@@ -21,7 +21,7 @@ export const Modal = ({ isOpen, onClose, onUploadSuccess }: ModalProps) => {
 
     try {
       setLoading(true);
-      const res = await uploadTripFile(file);
+      await uploadTripFile(file);
       onUploadSuccess?.();
       onClose();
     } catch (err) {
