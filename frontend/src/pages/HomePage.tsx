@@ -15,7 +15,7 @@ const DashboardPage = () => {
     <DashboardLayout>
       {/* Welcome Banner */}
       <Card className="p-4 mb-4 w-full">
-        <p className="text-base font-medium text-gray-800">👋 Welcome, User</p>
+        <p className="text-base font-medium text-gray-800">👋 Welcome Back</p>
       </Card>
 
       {/* Main Upload Card */}
