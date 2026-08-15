@@ -60,3 +60,18 @@ jobs:
 
       - name: Build frontend
         run: npm run build
+
+  deploy:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy backend to Render
+        run: curl -X POST "$RENDER_BACKEND_DEPLOY_HOOK"
+        env:
+          RENDER_BACKEND_DEPLOY_HOOK: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}
+
+      - name: Deploy frontend to Render
+        run: curl -X POST "$RENDER_FRONTEND_DEPLOY_HOOK"
+        env:
+          RENDER_FRONTEND_DEPLOY_HOOK: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}
