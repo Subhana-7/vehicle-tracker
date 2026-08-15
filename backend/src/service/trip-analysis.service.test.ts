@@ -86,6 +86,8 @@ describe("TripAnalysisService", () => {
         idlingTime: 0,
         stoppageTime: 0,
       });
+
+      expect(1).toBe(2);
     });
   });
 });
