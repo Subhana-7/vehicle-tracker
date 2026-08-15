@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TripAnalysisService } from "./trip-analysis.service";
-import { GPSData } from "../dtos/trip.dto";
+import type { GPSData } from "../dtos/trip.dto";
 
 describe("TripAnalysisService", () => {
   const service = new TripAnalysisService();
