@@ -1,10 +1,13 @@
 import { Navigate } from "react-router-dom";
 import { useAuthStore } from "../store/auth.store";
+import type { ReactNode } from "react";
 
-const PublicRoute = ({ children }: any) => {
+type PublicRouteProps = {
+  children: ReactNode;
+};
+
+const PublicRoute = ({ children }: PublicRouteProps) => {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-
-  console.log(isAuthenticated)
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;

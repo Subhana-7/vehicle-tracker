@@ -1,5 +1,7 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import { SpeedometerIcon } from "../components/SpeedoMeterIcon";
 import { LoginCard } from "../components/CardComponent";
@@ -9,25 +11,62 @@ import { AuthLayout } from "../components/AuthLayout";
 import { signupUser } from "../services/auth.service";
 import { StatusModal } from "../components/StatusModal";
 
+type SignupErrors = {
+  name?: string;
+  email?: string;
+  password?: string;
+};
+
+type ModalState = {
+  open: boolean;
+  type: "error" | "success";
+  message: string;
+};
+
 const SignupPage = () => {
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{
-    name?: string;
-    email?: string;
-    password?: string;
-  }>({});
-  const [modal, setModal] = useState({
+
+  const [errors, setErrors] = useState<SignupErrors>({});
+
+  const [modal, setModal] = useState<ModalState>({
     open: false,
     type: "error",
     message: "",
   });
 
-  const handleSubmit = async (e: any) => {
+  const validate = () => {
+    const newErrors: SignupErrors = {};
+
+    if (!name) {
+      newErrors.name = "Name is required";
+    } else if (name.length < 2) {
+      newErrors.name = "Minimum 2 characters";
+    }
+
+    if (!email) {
+      newErrors.email = "Email is required";
+    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
+      newErrors.email = "Invalid email";
+    }
+
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 8) {
+      newErrors.password = "Minimum 8 characters";
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (!validate()) return;
 
     try {
@@ -38,14 +77,19 @@ const SignupPage = () => {
         type: "success",
         message: "Signup Success, Log-in to Continue",
       });
+
       setTimeout(() => {
         navigate("/");
       }, 2000);
-      //---- for now verify otp is not needed ----
+
+      // ---- for now verify otp is not needed ----
       // navigate("/verify-otp", { state: { email } });
-    } catch (err: any) {
-      const status = err.response?.status;
-      const message = err.response?.data?.message;
+    } catch (err: unknown) {
+      const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+
+      const message = axios.isAxiosError(err)
+        ? err.response?.data?.message
+        : undefined;
 
       if (status === 409) {
         setModal({
@@ -63,28 +107,13 @@ const SignupPage = () => {
     }
   };
 
-  const validate = () => {
-    const newErrors: any = {};
-
-    if (!name) newErrors.name = "Name is required";
-    else if (name.length < 2) newErrors.name = "Minimum 2 characters";
-
-    if (!email) newErrors.email = "Email is required";
-    else if (!/^\S+@\S+\.\S+$/.test(email)) newErrors.email = "Invalid email";
-
-    if (!password) newErrors.password = "Password is required";
-    else if (password.length < 8) newErrors.password = "Minimum 8 characters";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   return (
     <AuthLayout>
       <LoginCard>
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
           <SpeedometerIcon />
+
           <span className="text-xl font-semibold text-gray-800 tracking-tight">
             Speedo
           </span>
@@ -97,7 +126,7 @@ const SignupPage = () => {
             label="Name"
             placeholder="Your name"
             value={name}
-            onChange={(e: any) => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value)}
             error={errors.name}
           />
 
@@ -107,7 +136,7 @@ const SignupPage = () => {
             type="email"
             placeholder="example@email.com"
             value={email}
-            onChange={(e: any) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             error={errors.email}
           />
 
@@ -117,7 +146,7 @@ const SignupPage = () => {
             type="password"
             placeholder="At least 8 characters"
             value={password}
-            onChange={(e: any) => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             error={errors.password}
           />
 
@@ -132,10 +161,11 @@ const SignupPage = () => {
           </Link>
         </p>
       </LoginCard>
+
       <StatusModal
         isOpen={modal.open}
         onClose={() => setModal({ ...modal, open: false })}
-        type={modal.type as any}
+        type={modal.type}
         message={modal.message}
       />
     </AuthLayout>

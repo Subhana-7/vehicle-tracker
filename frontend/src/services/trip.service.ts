@@ -26,9 +26,7 @@ export const getAllTrips = async () => {
 
   const trips = res.data.trips;
 
-  console.log(trips);
-
-  return trips.map((trip: any) => ({
+  return trips.map((trip) => ({
     id: trip.id,
     name: trip.name,
     createdAt: trip.createdAt,
@@ -49,6 +47,7 @@ export const uploadTripFile = async (file: File): Promise<UploadResponse> => {
         withCredentials: true,
       },
     );
+
     return res.data;
   } catch (error) {
     const err = error as AxiosError<UploadError>;

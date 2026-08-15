@@ -24,15 +24,17 @@ export abstract class BaseRepository<T extends Document> {
   }
 
   async updateOne(filter: Partial<T>, data: Partial<T>): Promise<T | null> {
-    return this.model.findOneAndUpdate(filter as any, data, { new: true });
+    return this.model.findOneAndUpdate(filter as any, data, {
+      returnDocument: "after",
+    });
   }
 
   async deleteManyByIds(userId: string, ids: string[]): Promise<number> {
-  const result = await this.model.deleteMany({
-    _id: { $in: ids },
-    userId, 
-  });
+    const result = await this.model.deleteMany({
+      _id: { $in: ids },
+      userId,
+    });
 
-  return result.deletedCount || 0;
-}
+    return result.deletedCount || 0;
+  }
 }

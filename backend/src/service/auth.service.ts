@@ -170,8 +170,6 @@ export class AuthService implements IAuthService {
   async resendOtp(email: string): Promise<ResendOtpResponseDTO> {
     const user = await this._userRepo.findByEmail(email);
 
-    console.log(user?.otp?.expiresAt);
-
     if (!user)
       throw new AppError(AUTH_MESSAGES.USER_NOT_FOUND, STATUS_CODES.NOT_FOUND);
 

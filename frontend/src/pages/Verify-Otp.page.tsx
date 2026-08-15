@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 
 import { SpeedometerIcon } from "../components/SpeedoMeterIcon";
 import { LoginCard } from "../components/CardComponent";
@@ -8,26 +9,35 @@ import { AuthLayout } from "../components/AuthLayout";
 import { resendOtp, verifyOtp } from "../services/auth.service";
 import { useLocation, useNavigate } from "react-router-dom";
 import { StatusModal } from "../components/StatusModal";
+import axios from "axios";
+
+type ModalState = {
+  open: boolean;
+  type: "error" | "success";
+  message: string;
+};
 
 const VerifyOtpPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const email = location.state?.email;
+  const email = location.state?.email as string;
 
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(30);
-  const [canResend, setCanResend] = useState(false);
-  const [error, setError] = useState<string>("");
-  const [modal, setModal] = useState({
+  const [error, setError] = useState("");
+
+  const [modal, setModal] = useState<ModalState>({
     open: false,
     type: "error",
     message: "",
   });
 
+  // canResend is derived from timer
+  const canResend = timer <= 0;
+
   useEffect(() => {
     if (timer <= 0) {
-      setCanResend(true);
       return;
     }
 
@@ -37,40 +47,6 @@ const VerifyOtpPage = () => {
 
     return () => clearInterval(interval);
   }, [timer]);
-
-  const handleVerify = async (e: any) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    try {
-      await verifyOtp({ email, otp });
-
-      setModal({
-        open: true,
-        type: "success",
-        message: "Verified successfully",
-      });
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
-    } catch (err: any) {
-      setModal({
-        open: true,
-        type: "error",
-        message: err.response?.data?.message || "Invalid OTP",
-      });
-    }
-  };
-  const handleResend = async () => {
-    try {
-      await resendOtp(email);
-
-      setTimer(30);
-      setCanResend(false);
-    } catch {
-      alert("Failed to resend OTP");
-    }
-  };
 
   const validate = () => {
     if (!otp) {
@@ -87,12 +63,53 @@ const VerifyOtpPage = () => {
     return true;
   };
 
+  const handleVerify = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    try {
+      await verifyOtp({ email, otp });
+
+      setModal({
+        open: true,
+        type: "success",
+        message: "Verified successfully",
+      });
+
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+    } catch (err: unknown) {
+      const message = axios.isAxiosError(err)
+        ? err.response?.data?.message || "Invalid OTP"
+        : "Invalid OTP";
+
+      setModal({
+        open: true,
+        type: "error",
+        message,
+      });
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      await resendOtp(email);
+
+      setTimer(30);
+    } catch {
+      alert("Failed to resend OTP");
+    }
+  };
+
   return (
     <AuthLayout>
       <LoginCard>
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-6">
           <SpeedometerIcon />
+
           <span className="text-xl font-semibold text-gray-800 tracking-tight">
             Speedo
           </span>
@@ -101,6 +118,7 @@ const VerifyOtpPage = () => {
         {/* Heading */}
         <div className="text-center mb-6">
           <h2 className="text-lg font-semibold text-gray-800">Verify OTP</h2>
+
           <p className="text-sm text-gray-500 mt-1">
             Enter the OTP sent to your email
           </p>
@@ -113,7 +131,7 @@ const VerifyOtpPage = () => {
             label="OTP"
             placeholder="Enter 6-digit OTP"
             value={otp}
-            onChange={(e: any) => {
+            onChange={(e) => {
               setOtp(e.target.value);
               setError("");
             }}
@@ -138,13 +156,17 @@ const VerifyOtpPage = () => {
           )}
         </div>
       </LoginCard>
+
       <StatusModal
         isOpen={modal.open}
         onClose={() => {
           setModal({ ...modal, open: false });
-          if (modal.type === "success") navigate("/");
+
+          if (modal.type === "success") {
+            navigate("/");
+          }
         }}
-        type={modal.type as any}
+        type={modal.type}
         message={modal.message}
       />
     </AuthLayout>

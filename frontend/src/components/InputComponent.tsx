@@ -1,3 +1,16 @@
+import type { ChangeEvent } from "react";
+
+type InputTypes = {
+  id: string;
+  label: string;
+  type?: string;
+  placeholder: string;
+  value: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  error?: string;
+  required?: boolean;
+};
+
 export const LoginInput = ({
   id,
   label,
@@ -6,7 +19,7 @@ export const LoginInput = ({
   value,
   onChange,
   error,
-}: any) => (
+}: InputTypes) => (
   <div className="mb-5">
     <label
       htmlFor={id}
@@ -39,7 +52,7 @@ export const Input = ({
   value,
   onChange,
   required = false,
-}: any) => (
+}: InputTypes) => (
   <div className="w-full">
     {label && (
       <label

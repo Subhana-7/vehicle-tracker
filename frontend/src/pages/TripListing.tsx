@@ -7,20 +7,21 @@ import { Button } from "../components/Button";
 import { Modal } from "../components/Modal";
 import { useNavigate } from "react-router-dom";
 
+import { deleteTrips, getAllTrips } from "../services/trip.service";
+import { StatusModal } from "../components/StatusModal";
+
 type Trip = {
   id: string;
   name: string;
+  createdAt?: string;
 };
 
 type TripListProps = {
   trips: Trip[];
   selectedIds: string[];
   onToggle: (id: string) => void;
-  onOpen: (id: number) => void;
+  onOpen: (id: string) => void;
 };
-
-import { deleteTrips, getAllTrips } from "../services/trip.service";
-import { StatusModal } from "../components/StatusModal";
 
 const TripList = ({ trips, selectedIds, onToggle, onOpen }: TripListProps) => (
   <div className="w-full">
@@ -30,6 +31,7 @@ const TripList = ({ trips, selectedIds, onToggle, onOpen }: TripListProps) => (
         Trips
       </span>
     </div>
+
     {/* Mobile header */}
     <div className="flex sm:hidden items-center px-3 py-2">
       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
@@ -55,6 +57,7 @@ export default function TripsPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
+
   const [statusModal, setStatusModal] = useState({
     isOpen: false,
     type: "success" as "success" | "error",
@@ -65,23 +68,47 @@ export default function TripsPage() {
 
   const fetchTrips = async () => {
     const data = await getAllTrips();
+
     const sorted = [...data].sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        new Date(b.createdAt ?? 0).getTime() -
+        new Date(a.createdAt ?? 0).getTime(),
     );
+
     setTrips(sorted);
   };
 
   useEffect(() => {
-    fetchTrips();
+    let cancelled = false;
+
+    const loadTrips = async () => {
+      const data = await getAllTrips();
+
+      if (cancelled) return;
+
+      const sorted = [...data].sort(
+        (a, b) =>
+          new Date(b.createdAt ?? 0).getTime() -
+          new Date(a.createdAt ?? 0).getTime(),
+      );
+
+      setTrips(sorted);
+    };
+
+    void loadTrips();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleToggle = (id: string) =>
+  const handleToggle = (id: string) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
+  };
 
-  const handleOpen = (id: number) => {
+  const handleOpen = (id: string) => {
     navigate(`/trips/details/${id}`);
   };
 
@@ -92,6 +119,7 @@ export default function TripsPage() {
       await deleteTrips(selectedIds);
 
       setTrips((prev) => prev.filter((t) => !selectedIds.includes(t.id)));
+
       setSelectedIds([]);
 
       setStatusModal({
@@ -99,11 +127,13 @@ export default function TripsPage() {
         type: "success",
         message: "Trips deleted successfully",
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Delete failed";
+
       setStatusModal({
         isOpen: true,
         type: "error",
-        message: err.message || "Delete failed",
+        message,
       });
     }
   };
@@ -132,6 +162,7 @@ export default function TripsPage() {
             variant="primary"
             onClick={() => setModalOpen(true)}
           />
+
           <p className="text-sm text-gray-400">
             Upload the Excel sheet of your trip
           </p>
@@ -143,6 +174,7 @@ export default function TripsPage() {
         {/* Section header with bulk actions */}
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-semibold text-gray-800">Your Trips</h2>
+
           <div className="hidden sm:flex items-center gap-2">
             <Button
               text="Delete"
@@ -161,6 +193,7 @@ export default function TripsPage() {
             onToggle={handleToggle}
             onOpen={handleOpen}
           />
+
           <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -168,16 +201,23 @@ export default function TripsPage() {
           />
         </Card>
       </div>
+
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onUploadSuccess={fetchTrips}
       />
+
       <StatusModal
         isOpen={statusModal.isOpen}
         type={statusModal.type}
         message={statusModal.message}
-        onClose={() => setStatusModal((prev) => ({ ...prev, isOpen: false }))}
+        onClose={() =>
+          setStatusModal((prev) => ({
+            ...prev,
+            isOpen: false,
+          }))
+        }
       />
     </DashboardLayout>
   );

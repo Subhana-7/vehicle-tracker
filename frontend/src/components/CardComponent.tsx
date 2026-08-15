@@ -2,31 +2,60 @@ import type { ReactNode } from "react";
 import { Button } from "./Button";
 
 type CardProps = {
-  children:ReactNode;
-  className?:string
+  children: ReactNode;
+  className?: string;
+};
+
+interface HeaderCardProps {
+  title: string;
+  onNew: () => void;
 }
 
-export const LoginCard = ({ children }:CardProps) => (
+interface StateCardProps {
+  value: string;
+  label: string;
+  icon: string;
+  color?: string;
+}
+
+type StatCardProps = {
+  id: string;
+  value: string;
+  label: string;
+  icon: string;
+};
+
+type StatsGridProps = {
+  stats: StatCardProps[];
+};
+
+export const LoginCard = ({ children }: CardProps) => (
   <div className="bg-white rounded-2xl shadow-lg w-full max-w-md sm:max-w-sm md:max-w-md p-6 sm:p-8 md:p-10">
     {children}
   </div>
 );
 
-export const Card = ({ children, className = "" }:CardProps) => (
-  <div className={`bg-white rounded-xl border border-gray-200 shadow-sm ${className}`}>
+export const Card = ({ children, className = "" }: CardProps) => (
+  <div
+    className={`bg-white rounded-xl border border-gray-200 shadow-sm ${className}`}
+  >
     {children}
   </div>
 );
 
-export const HeaderCard = ({ title, onNew }:any) => (
+export const HeaderCard = ({ title, onNew }: HeaderCardProps) => (
   <Card className="p-4 flex items-center justify-between">
     <span className="text-base font-semibold text-gray-800">{title}</span>
     <Button text="New" onClick={onNew} />
   </Card>
 );
 
-
-export const StatCard = ({ value, label, icon, color = "text-slate-800" }:any) => (
+export const StatCard = ({
+  value,
+  label,
+  icon,
+  color = "text-slate-800",
+}: StateCardProps) => (
   <Card className="p-4 flex flex-col gap-2">
     <span className="text-lg">{icon}</span>
     <p className={`text-lg font-bold ${color}`}>{value}</p>
@@ -34,9 +63,9 @@ export const StatCard = ({ value, label, icon, color = "text-slate-800" }:any) =
   </Card>
 );
 
-export const StatsGrid = ({ stats }:any) => (
+export const StatsGrid = ({ stats }: StatsGridProps) => (
   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-    {stats.map((s:any) => (
+    {stats.map((s) => (
       <StatCard key={s.id} {...s} />
     ))}
   </div>

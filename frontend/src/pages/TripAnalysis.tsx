@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getAllTrips, getTripById } from "../services/trip.service";
 import type { TripDetails } from "../types/trip";
 
@@ -10,42 +10,41 @@ import { Tabs } from "../components/Tabs";
 import { DashboardLayout } from "../components/DashboardLayout";
 import { TripMap } from "../components/TripMap";
 import { Pagination } from "../components/Pagination";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Modal } from "../components/Modal";
-import { useNavigate } from "react-router-dom";
 
-type Tab = { id: string; name: string };
+type Tab = {
+  id: string;
+  name: string;
+};
 
 export default function TripDetailsPage() {
   const [tabs, setTabs] = useState<Tab[]>([]);
-  const [activeTripId, setActiveTripId] = useState<string | null>(null);
   const [trip, setTrip] = useState<TripDetails | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-
   const [currentPage, setCurrentPage] = useState(1);
+
   const PAGE_SIZE = 8;
 
   const { id } = useParams();
-
   const navigate = useNavigate();
 
-  // Load all trips
+  // The active trip comes directly from the URL
+  const activeTripId = id ?? null;
 
-    const loadTrips = async () => {
-      const data = await getAllTrips();
-      setTabs(data);
-    };
-  useEffect(() => {
-    loadTrips();
+  // Load all trips
+  const loadTrips = useCallback(async () => {
+    const data = await getAllTrips();
+    setTabs(data);
   }, []);
 
   useEffect(() => {
-    if (!id) return;
+    const load = async () => {
+      await loadTrips();
+    };
 
-    setActiveTripId(id);
-  }, [id]);
-
-  console.log("tabs", tabs);
+    load();
+  }, [loadTrips]);
 
   // Load selected trip
   useEffect(() => {
@@ -59,9 +58,10 @@ export default function TripDetailsPage() {
     loadTrip();
   }, [activeTripId]);
 
-  useEffect(() => {
+  const handleTabSelect = (tripId: string) => {
     setCurrentPage(1);
-  }, [activeTripId]);
+    navigate(`/trips/details/${tripId}`);
+  };
 
   const stats = trip
     ? [
@@ -117,17 +117,22 @@ export default function TripDetailsPage() {
       <div className="flex items-center gap-2 mb-2">
         <button
           onClick={() => navigate(-1)}
-          className="px-3 py-1  hover:bg-gray-100"
+          className="px-3 py-1 hover:bg-gray-100"
         >
           ←
         </button>
       </div>
+
       <HeaderCard
         title={trip?.name ?? "Trips"}
         onNew={() => setModalOpen(true)}
       />
 
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} onUploadSuccess={loadTrips} />
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onUploadSuccess={loadTrips}
+      />
 
       <Legend />
 
@@ -137,11 +142,7 @@ export default function TripDetailsPage() {
       </MapCard>
 
       {/* Tabs */}
-      <Tabs
-        tabs={tabs}
-        activeId={activeTripId}
-        onSelect={(id: string) => setActiveTripId(id)}
-      />
+      <Tabs tabs={tabs} activeId={activeTripId} onSelect={handleTabSelect} />
 
       {/* Stats */}
       <StatsGrid stats={stats} />

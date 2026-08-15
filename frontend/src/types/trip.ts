@@ -1,5 +1,6 @@
 export type TripSummary = {
   id: string;
+  name: string;
   distance: number;
   idling: number;
   stoppage: number;
