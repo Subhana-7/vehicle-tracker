@@ -20,6 +20,10 @@ A full-stack vehicle trip tracking and analysis app. Upload GPS trip data (CSV),
 - Leaflet / React-Leaflet for map visualization
 - Axios for API calls
 
+## CI/CD
+
+This project uses GitHub Actions for CI and Render for deployment.
+
 ## Features
 
 - Email/OTP-based signup and login with JWT access & refresh tokens
